@@ -11,7 +11,7 @@ def fara_afram():
     m2_sign  = 0 if m2 >= 0 else 1
     data = [m1, m1_sign, m2, m2_sign]
     bus.write_i2c_block_data(I2C_ADDRESS, 0x00, data)
-    print(f"Sent speeds → Motor1: {m1}, Motor2: {m2}")
+    return f"Sent speeds → Motor1: {m1}, Motor2: {m2}"
     
 def fara_aftur():
     m1 = int(abs(-255))
@@ -20,7 +20,7 @@ def fara_aftur():
     m2_sign  = 0 if m2 >= 0 else 1
     data = [m1, m1_sign, m2, m2_sign]
     bus.write_i2c_block_data(I2C_ADDRESS, 0x00, data)
-    print(f"Sent speeds → Motor1: {m1}, Motor2: {m2}")
+    return f"Sent speeds → Motor1: {m1}, Motor2: {m2}"
 
 def beyja(att):
     if att == "Hægri":
@@ -30,7 +30,7 @@ def beyja(att):
         m2_sign  = 0 if m2 >= 0 else 1
         data = [m1, m1_sign, m2, m2_sign]
         bus.write_i2c_block_data(I2C_ADDRESS, 0x00, data)
-        print(f"Sent speeds → Motor1: {m1}, Motor2: {m2}")
+        return f"Sent speeds → Motor1: {m1}, Motor2: {m2}"
 
     elif att == "Vinstri":
         m1 = int(abs(0))
@@ -50,7 +50,7 @@ def stoppa():
     m2_sign  = 0 if m2 >= 0 else 1
     data = [m1, m1_sign, m2, m2_sign]
     bus.write_i2c_block_data(I2C_ADDRESS, 0x00, data)
-    print(f"Sent speeds → Motor1: {m1}, Motor2: {m2}")
+    return f"Sent speeds → Motor1: {m1}, Motor2: {m2}"
 
 
 
