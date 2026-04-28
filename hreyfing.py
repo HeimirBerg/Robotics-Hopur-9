@@ -6,7 +6,7 @@ bus = smbus.SMBus(1) # I2C bus on Pi Zero / Pi 3 / Pi 4
 
 def fara_afram():
     m1 = int(abs(255))
-    m2 = int(abs(-255))
+    m2 = int(abs(255))
     m1_sign  = 0 if m1 >= 0 else 1
     m2_sign  = 0 if m2 >= 0 else 1
     data = [m1, m1_sign, m2, m2_sign]
@@ -15,7 +15,7 @@ def fara_afram():
     
 def fara_aftur():
     m1 = int(abs(-255))
-    m2 = int(abs(255))
+    m2 = int(abs(-255))
     m1_sign  = 0 if m1 >= 0 else 1
     m2_sign  = 0 if m2 >= 0 else 1
     data = [m1, m1_sign, m2, m2_sign]
@@ -34,7 +34,7 @@ def beyja(att):
 
     elif att == "Vinstri":
         m1 = int(abs(0))
-        m2 = int(abs(255))
+        m2 = int(abs(-255))
         m1_sign  = 0 if m1 >= 0 else 1
         m2_sign  = 0 if m2 >= 0 else 1
         data = [m1, m1_sign, m2, m2_sign]
