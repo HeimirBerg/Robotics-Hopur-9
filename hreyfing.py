@@ -1,5 +1,4 @@
 import smbus
-import time
 I2C_ADDRESS = 0x50   # Arduino slave address
 bus = smbus.SMBus(1) # I2C bus on Pi Zero / Pi 3 / Pi 4
 
