@@ -11,7 +11,7 @@ while i == 1:
         print(beyja("Hægri"))
     elif val == "a":
         print(beyja("Vinstri"))
-    elif val == "stop":
+    elif val == "0":
         print(stoppa())
         break
     else:
