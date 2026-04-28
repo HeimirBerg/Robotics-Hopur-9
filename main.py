@@ -1,6 +1,7 @@
 from skynjun import *
 from hreyfing import *
-while True:
+i = 1
+while i == 1:
     val = input("Veldu Átt(w,a,s,d eða 0 til að hætta): ")
     if val == "w":
         print(fara_afram())
@@ -11,6 +12,6 @@ while True:
     elif val == "a":
         print(beyja("Vinstri"))
     elif val == "0":
-        break
+        i = 2
     else:
         print("villa")
