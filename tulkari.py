@@ -17,4 +17,9 @@ while True:
     current_value1 = data1[2] * 256 + data1[3]
     current_value2 = data2[2] * 256 + data2[3]
 
+    if current_value1 == 0:
+        current_value1 = 600
+    if current_value2 == 0:
+        current_value2 = 600
+
     print(f"Skynjari 1: {current_value1} cm    Skynjari 2: {current_value2} cm")
