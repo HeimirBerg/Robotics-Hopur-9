@@ -32,7 +32,8 @@ def stoppa():
     return senda(0,0)
 
 def velja_hrada():
-    while True:
+    i = 1
+    while i == 1:
         try:
             hradi = int(input("Veldu hraða [1-255]: "))
 
