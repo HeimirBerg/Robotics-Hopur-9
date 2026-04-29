@@ -14,12 +14,17 @@ def senda(m1,m2):
     return f"Sent speeds → Motor1: {m1}, Motor2: {m2}"
 
 def fara_afram(hradi):
+    hradi = int(hradi)
     return senda(hradi,-hradi)
     
 def fara_aftur(hradi):
+    hradi = int(hradi)
     return senda(-hradi,hradi)
 
 def beyja(att,hradi,radius):
+    hradi = int(hradi)
+    radius = int(radius)
+
     if att == "Hægri":
         return senda(hradi,-radius)
 
@@ -50,7 +55,7 @@ def velja_hrada():
     return hradi
 
 def velja_radius(hradi):
-
+    hradi = int(hradi)
     print("Veldu hversu krappa beygju á að taka:")
     print("1: Á staðnum")
     print("2: Kröpp")
@@ -80,7 +85,7 @@ def velja_radius(hradi):
         except ValueError:
             print("Ógilt val!")
             continue
-
+    radius = int(radius)
     return radius
 
 
