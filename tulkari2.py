@@ -1,3 +1,5 @@
+# skynjun
+
 import time
 from smbus import SMBus
 
@@ -5,7 +7,7 @@ i2c_bus = SMBus(1)
 i2c_address1 = 0x71
 i2c_address2 = 0x72
 
-while True:
+def sense():
     i2c_bus.write_byte_data(i2c_address1, 0, 0x51)
     i2c_bus.write_byte_data(i2c_address2, 0, 0x51)
 
@@ -23,3 +25,9 @@ while True:
         current_value2 = 255
 
     print(f"Skynjari 1: {current_value1} cm    Skynjari 2: {current_value2} cm")
+    return current_value1, current_value2
+
+while True:
+    sjon = sense()
+    if sjon[0] == 17 and sjon[1] == 17:
+        break
