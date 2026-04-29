@@ -37,30 +37,33 @@ def stoppa():
     return senda(0,0)
 
 def velja_hrada():
-    i = 1
-    while i == 1:
+    
+    while True:
         try:
-            hradi = int(input("Veldu hraða [1-255]: "))
+            hradi = int(input("Veldu hraða [15-255]: "))
 
-            if not (0 < hradi <= 255):
-                print("Ógilt val! Sláðu inn heiltölu á bilinu [1-255].")
+            if not (15 <= hradi <= 255):
+                print("Ógilt val! Sláðu inn heiltölu á bilinu [15-255].")
                 continue
             else:
                 break
 
         except ValueError:
-            print("Ógilt val! Sláðu inn heiltölu á bilinu [1-255].")
+            print("Ógilt val! Sláðu inn heiltölu á bilinu [15-255].")
             continue
 
     return hradi
 
 def velja_radius(hradi):
+
     hradi = int(hradi)
+
     print("Veldu hversu krappa beygju á að taka:")
     print("1: Á staðnum")
     print("2: Kröpp")
-    print("3: Millistig")
-    print("4: Aflíðandi")
+    print("3: Milli-millistig")
+    print("4: Millistig")
+    print("5: Aflíðandi")
 
     while True:
         try:
@@ -76,6 +79,8 @@ def velja_radius(hradi):
                 radius = (hradi/2.5)
                 break
             elif val == 4:
+                radius = (hradi/1.9)
+            elif val == 5:
                 radius = (hradi/1.3)
                 break
             else:
@@ -85,6 +90,7 @@ def velja_radius(hradi):
         except ValueError:
             print("Ógilt val!")
             continue
+
     radius = int(radius)
     return radius
 
