@@ -2,22 +2,24 @@ import time
 from smbus import SMBus
 
 i2c_bus = SMBus(1)
-i2c_address2 = 0x71
-i2c_address = 0x72
+i2c_address1 = 0x71
+i2c_address2 = 0x72
 
-while 1:
-    i2c_bus.write_byte_data(i2c_address, 0, 0x51)  # Tell sensor to scan in mm
+while True:
+    i2c_bus.write_byte_data(i2c_address1, 0, 0x51)
+    i2c_bus.write_byte_data(i2c_address2, 0, 0x51)
 
-    time.sleep(0.05)  # Bíða eftir bylgjunni
+    time.sleep(0.07)  # 70ms
 
-    high = i2c_bus.read_byte_data(i2c_address, 2)  # Read the high byte of the value
-    #print(high) # print the value of High byte
+    data1 = i2c_bus.read_i2c_block_data(i2c_address1, 0, 4)
+    data2 = i2c_bus.read_i2c_block_data(i2c_address2, 0, 4)
 
-    low = i2c_bus.read_byte_data(i2c_address, 3)  # Read the low byte of the value
-    #print(low) # print the value of low byte
+    current_value1 = data1[2] * 256 + data1[3]
+    current_value2 = data2[2] * 256 + data2[3]
 
-    current_value = high * 256 + low 
+    if current_value1 == 0:
+        current_value1 = 255
+    if current_value2 == 0:
+        current_value2 = 255
 
-    print(current_value)
-
-    
+    print(f"Skynjari 1: {current_value1} cm    Skynjari 2: {current_value2} cm")
