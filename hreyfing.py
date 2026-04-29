@@ -73,10 +73,10 @@ def velja_radius(hradi):
                 radius = 0
                 break
             elif val == 3:
-                radius = (hradi/4.5)
+                radius = (hradi/2.5)
                 break
             elif val == 4:
-                radius = (hradi/2.25)
+                radius = (hradi/1.5)
                 break
             else:
                 print("Ógilt val!")
