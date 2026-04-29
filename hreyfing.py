@@ -80,6 +80,7 @@ def velja_radius(hradi):
                 break
             elif val == 4:
                 radius = (hradi/1.9)
+                break
             elif val == 5:
                 radius = (hradi/1.3)
                 break
