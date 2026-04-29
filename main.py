@@ -2,8 +2,9 @@ from skynjun import *
 from hreyfing import *
 
 hradi = velja_hrada()
+print(hradi)
 beyju_hradi = velja_radius(hradi)
-
+print(beyju_hradi)
 while True:
     val = input("Veldu Átt(w,a,s,d eða 0 til að hætta): ")
     if val == "w":
