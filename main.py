@@ -18,9 +18,9 @@ while True:
     elif val == "0":
         print(stoppa())
         break
-    elif val == "r":
-        velja_hrada()
     elif val == "f":
-        velja_radius(hradi)
+        print(velja_hrada())
+    elif val == "r":
+        print(velja_radius(hradi))
     else:
         print("villa")
