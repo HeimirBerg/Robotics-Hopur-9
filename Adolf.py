@@ -1,8 +1,7 @@
 x = input('Gefðu nafn: ')
 
-if x == 'Adolf':
+if x == 'Adolf' or x == 'Sieg':
     print('Heil')
 else:
     print('Nein')
 
-print("Takk fyrir mig")
