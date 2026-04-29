@@ -19,12 +19,12 @@ def fara_afram(hradi):
 def fara_aftur(hradi):
     return senda(-hradi,hradi)
 
-def beyja(att,hradi):
+def beyja(att,hradi,radius):
     if att == "Hægri":
-        return senda(hradi,-(hradi/2.25))
+        return senda(hradi,-radius)
 
     elif att == "Vinstri":
-        return senda((hradi/2.25),-hradi)
+        return senda(radius,-hradi)
     else: 
         return "Villa! skrifaðu annað hvort \"Hægri\" eða \"Vinstri\""
 
@@ -32,25 +32,55 @@ def stoppa():
     return senda(0,0)
 
 def velja_hrada():
-    gildi = -1
-    while not (0 < gildi <= 255):
+    while True:
         try:
-            gildi = int(input("Veldu hraða [1-255]: "))
+            hradi = int(input("Veldu hraða [1-255]: "))
 
-            if not (0 < gildi <= 255):
-                print("Villa! Sláðu inn heiltölu á bilinu [1-255].")
+            if not (0 < hradi <= 255):
+                print("Ógilt val! Sláðu inn heiltölu á bilinu [1-255].")
                 continue
             else:
-                hradi = gildi
                 break
 
         except ValueError:
-            print("Villa! Sláðu inn heiltölu á bilinu [1-255].")
+            print("Ógilt val! Sláðu inn heiltölu á bilinu [1-255].")
             continue
 
     return hradi
 
+def velja_radius(hradi):
 
+    print("Veldu hversu krappa beygju á að taka:")
+    print("1: Á staðnum")
+    print("2: Kröpp")
+    print("3: Millistig")
+    print("4: Aflíðandi")
+
+    while True:
+        try:
+            val = int(input("Val: "))
+
+            if val == 1:
+                radius = -hradi
+                break
+            elif val == 2:
+                radius = 0
+                break
+            elif val == 3:
+                radius = (hradi/4.5)
+                break
+            elif val == 4:
+                radius = (hradi/2.25)
+                break
+            else:
+                print("Ógilt val!")
+                continue
+
+        except ValueError:
+            print("Ógilt val!")
+            continue
+
+    return radius
 
 
     
