@@ -26,8 +26,11 @@ def send_speeds(m1: int, m2: int) -> str:
         m1_speed = abs(m1)
         m1_sign = 0 if m1 >= 0 else 1
 
-        m2_speed = abs(m1)
-        m2_sign = 0 if m1 >= 0 else 1
+        m2_speed = abs(m2)
+        m2_sign = 1 if m2 >= 0 else 0 # Inverted sign to correct direction of rotation
+
+        # Actual m2 value sent to MCU
+        m2 = -m2 if m2_sign == 1 else m2
 
         # Pack data into 4 bytes [speed1, sign1, speed2, sign2]
         data = [m1_speed, m1_sign, m2_speed, m2_sign]
@@ -44,35 +47,25 @@ def send_speeds(m1: int, m2: int) -> str:
 def forward(speed: int) -> str:
     """Converts a single speed input so it can be sent to the motors with correct signs."""
     try:
-        velocity = int(speed)
-        
-        # Fix signs for forward
-        m1 = velocity
-        m2 = -velocity
-
-        send_speeds(m1,m2)
+        m = int(speed)
+        send_speeds(m,m)
 
     except ValueError:
         return "Invalid number format"
 
-    return f"Speed {speed} sent as {m1}, {m2}."
+    return f"Speed {speed} sent as {m}."
     
 
 def reverse(speed: int) -> str:
     """Converts a single speed input so it can be sent to the motors with correct signs."""
     try:
-        velocity = int(speed)
-
-        # Fix signs for reverse
-        m1 = -velocity
-        m2 = velocity
-
-        send_speeds(m1,m2)
+        m = int(speed)
+        send_speeds(-m,-m)
 
     except ValueError:
         return "Invalid number format"
     
-    return f"Speed {speed} sent as {m1}, {m2}."
+    return f"Speed {speed} sent as {m}."
 
     
 def turn_left(speed: int, ratio=255.0) -> str:
@@ -81,11 +74,11 @@ def turn_left(speed: int, ratio=255.0) -> str:
         velocity = int(speed)
 
         # Calculate motor values
-        m1 = velocity
-        m2 = -(velocity/ratio)
-        m2 = int(m2)
+        m1 = (velocity/ratio)
+        m2 = velocity
+        m1 = int(m1)
 
-        send_speeds(m1,m2)
+        print(send_speeds(m1,m2))
 
     except ValueError:
         return "Invalid number format."
@@ -99,11 +92,11 @@ def turn_right(speed: int, ratio=255.0) -> str:
         velocity = int(speed)
 
         # Calculate motor values
-        m1 = (velocity/ratio)
-        m2 = -velocity
-        m1 = int(m1)
+        m1 = velocity
+        m2 = (velocity/ratio)
+        m2 = int(m2)
 
-        send_speeds(m1,m2)
+        print(send_speeds(m1,m2))
 
     except ValueError:
         return "Invalid number format."
