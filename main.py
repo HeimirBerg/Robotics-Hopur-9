@@ -9,7 +9,8 @@ adalval = int(input(" Vinsamlegast veldu eftirfarandi:\n 1 - Autopilot\n 2 - Man
 i = 1
 while i == 1:
     if adalval == 1:
-        pass
+        s1,s2 = skynjun()
+        print(f"Skynjari 1: {s1}, Skynjari 2: {s2}")
     elif adalval == 2:
 
         while True:
