@@ -6,8 +6,8 @@ print(hradi)
 beyju_hradi = velja_radius(hradi)
 print(beyju_hradi)
 adalval = int(input(" Vinsamlegast veldu eftirfarandi:\n 1 - Autopilot\n 2 - Manual Mode\n 3 - Hætta"))
-
-while True:
+i = 1
+while i == 1:
     if adalval == 1:
         pass
     elif adalval == 2:
