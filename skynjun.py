@@ -6,7 +6,8 @@ i2c_address1 = 0x71
 i2c_address2 = 0x72
 
 def skynjun():
-    while True:
+    i = 1
+    while i == 1:
         i2c_bus.write_byte_data(i2c_address1, 0, 0x51)
         i2c_bus.write_byte_data(i2c_address2, 0, 0x51)
 
