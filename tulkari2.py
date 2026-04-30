@@ -20,19 +20,27 @@ def sense(last1,last2):
     current_value1 = data1[2] * 256 + data1[3] # Reiknum saman hvað kom út
     current_value2 = data2[2] * 256 + data2[3]
 
-    if current_value1 == 0:         # Skynjari túlkar ekkert endurkast sem 0, skilgreinum það sem seinasta
+    if current_value1 < 20 and last1 < 50:         # Skynjari túlkar ekkert endurkast sem 0, skilgreinum það sem seinasta
         current_value1 = last1
-    if current_value2 == 0:
+        print("of nálægt")
+    elif current_value1 < 20 and last1 > 500:
+        current_value1 = last1
+        print("langt")
+    if current_value2 < 20 and last2 < 50:         
         current_value2 = last2
-    
+        print("of nálægt")
+    elif current_value1 < 20 and last2 > 500:
+        current_value1 = last2
+        print("langt")
+
     if current_value1 == current_value2:
         hlutf = 1
         lengri = "jafnt"
     elif current_value1 > current_value2:
-        hlutf = current_value1/current_value2
+        hlutf = round(current_value1/current_value2, 4)
         lengri = "1 er stærri"
     elif current_value2 > current_value1:
-        hlutf = current_value2/current_value1
+        hlutf = round(current_value2/current_value1, 4)
         lengri = "2 er stærri"
     
     last1 = current_value1
@@ -52,9 +60,6 @@ while True:
     sjon = sense(uskyn1,uskyn2)
     uskyn1 = sjon[0]
     uskyn2 = sjon[1]
-    if sjon [0] < 30 or sjon[1] < 30:
-        print("Of nálægt")
-
 
 
     
