@@ -22,13 +22,13 @@ def skynjun():
     # Sensor 1: 0 = too close, 800 = out of range, else = distance in cm
     if current_value1 == 0 or current_value1 > 550:
         current_value1 = 800
-    elif current_value1 < 25:
+    elif current_value1 < 20:
         current_value1 = 0
 
     # Sensor 2: same logic
     if current_value2 == 0 or current_value2 > 550:
         current_value2 = 800
-    elif current_value2 < 25:
+    elif current_value2 < 20:
         current_value2 = 0
 
     return current_value1, current_value2
