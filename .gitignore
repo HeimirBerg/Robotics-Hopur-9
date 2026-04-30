@@ -1,0 +1,10 @@
+# Kóði sem á ekki að uploda á GitHub
+
+## Cache mappa
+__pycache__/
+
+## Prufu kóði
+test/
+
+## Backup af kóða
+backup/
