@@ -10,9 +10,9 @@ i2c_address2 = 0x72
 
 def sense(last1,last2):
     i2c_bus.write_byte_data(i2c_address1, 0, 0x51) # Mæli í cm
-    i2c_bus.write_byte_data(i2c_address2, 0, 0x51)
-
     time.sleep(0.07)  # 70ms
+    i2c_bus.write_byte_data(i2c_address2, 0, 0x51)
+    time.sleep(0.07)  # 70ms 
 
     data1 = i2c_bus.read_i2c_block_data(i2c_address1, 0, 4) # Sjáum hvað ég fékk
     data2 = i2c_bus.read_i2c_block_data(i2c_address2, 0, 4)
