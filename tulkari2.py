@@ -1,13 +1,14 @@
 # skynjun
 
 import time
+import threading
 from smbus import SMBus
 
 i2c_bus = SMBus(1)
 i2c_address1 = 0x71
 i2c_address2 = 0x72
 
-def sense():
+def sense(last1,last2):
     i2c_bus.write_byte_data(i2c_address1, 0, 0x51) # Mæli í cm
     i2c_bus.write_byte_data(i2c_address2, 0, 0x51)
 
@@ -38,19 +39,22 @@ def sense():
     last2 = current_value2
 
     print(f"Skynjari 1: {current_value1} cm    Skynjari 2: {current_value2} cm      Hlutfall: {hlutf} {lengri}")
-    return current_value1, current_value2, hlutf
+    return last1, last2, hlutf
 
 def hlutfall(a,b):
     v = a/255
     h = b/255
     
+uskyn1 = 500
+uskyn2 = 500
 
 while True:
-    sjon = sense()
+    sjon = sense(uskyn1,uskyn2)
+    uskyn1 = sjon[0]
+    uskyn2 = sjon[1]
     if sjon [0] < 30 or sjon[1] < 30:
         print("Of nálægt")
-    if sjon[0] == 17 and sjon[1] == 17:
-        break
+
 
 
     
