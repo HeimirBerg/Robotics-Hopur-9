@@ -6,6 +6,9 @@ kit = ServoKit(channels=8)
 kit.servo[0].angle = 90
 kit.servo[1].angle = 90
 time.sleep(1)
+kit.servo[0].angle = 360
+kit.servo[1].angle = 360
+time.sleep(1)
 kit.servo[0].angle = 80
 kit.servo[1].angle = 100
 time.sleep(1) 
