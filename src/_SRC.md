@@ -5,7 +5,7 @@
 
 ## Innihald
 
-1. __init__.py: Tóm skrá svo hægt sé að importa innihald í aðrar skrár.
+1. \_\_init\_\_.py: Tóm skrá svo hægt sé að importa innihald í aðrar skrár.
 2. addresses.py: Addressur til að geta haft samskipti við Raspberry PI.
 3. autodrive.py: Sér um innbyggða akstursferla.
 4. manualdrive.py: Sér um handvirkann akstur með tökkum/skipunum.

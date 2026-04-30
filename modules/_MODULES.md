@@ -5,6 +5,6 @@
 
 ## Innihald
 
-1. __init__.py: Tóm skrá svo hægt sé að importa innihald í aðrar skrár.
+1. \_\_init\_\_.py: Tóm skrá svo hægt sé að importa innihald í aðrar skrár.
 2. audio.py: Sér um allann kóða tengdann spilun á hljóði.
 3. movement.py: Sér um alla hreyfingu á róbotanum.
