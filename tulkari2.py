@@ -20,6 +20,11 @@ def sense(last1,last2):
     current_value1 = data1[2] * 256 + data1[3] # Reiknum saman hvað kom út
     current_value2 = data2[2] * 256 + data2[3]
 
+    if current_value1 < 20:
+        current_value1 = 1
+    if current_value2 < 20:
+        current_value2 = 1
+
     if current_value1 < 20 and last1 < 50:         # Skynjari túlkar ekkert endurkast sem 0, skilgreinum það sem seinasta
         current_value1 = last1
         print("of nálægt")
