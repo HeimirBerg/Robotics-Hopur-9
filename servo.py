@@ -9,11 +9,11 @@ time.sleep(1)
 kit.servo[0].angle = 180
 kit.servo[1].angle = 180
 time.sleep(1)
-kit.servo[0].angle = 200
-kit.servo[1].angle = 200
-time.sleep(1) 
 kit.servo[0].angle = 0
 kit.servo[1].angle = 0
+time.sleep(1) 
+kit.servo[0].angle = 180
+kit.servo[1].angle = 180
 time.sleep(1) 
 kit.servo[0].angle = None
 kit.servo[1].angle = None
