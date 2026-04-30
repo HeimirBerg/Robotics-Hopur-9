@@ -46,3 +46,6 @@ while True:
     sjon = sense()
     if sjon[0] == 17 and sjon[1] == 17:
         break
+
+
+    

@@ -5,15 +5,15 @@ hradi = velja_hrada()
 print(hradi)
 beyju_hradi = velja_radius(hradi)
 print(beyju_hradi)
-adalval = int(input(" Vinsamlegast veldu eftirfarandi:\n 1 - Autopilot\n 2 - Manual Mode\n 3 - Hætta"))
+adalval = int(input(" Vinsamlegast veldu eftirfarandi:\n 1 - Autopilot\n 2 - Manual Mode\n 3 - Hætta\n "))
 i = 1
 while i == 1:
     if adalval == 1:
         s1,s2 = skynjun()
         print(f"Skynjari 1: {s1}, Skynjari 2: {s2}")
     elif adalval == 2:
-
-        while True:
+        k = 1
+        while k == 1:
             val = input("Veldu Átt(w,a,s,d eða 0 til að hætta): ")
             if val == "w":
                 print(fara_afram(hradi))
