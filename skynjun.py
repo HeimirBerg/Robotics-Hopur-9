@@ -6,6 +6,9 @@ i2c_address1 = 0x71
 i2c_address2 = 0x72
 
 def skynjun():
+    last_value1 = 800
+    last_value2 = 800
+
     i = 1
     while i == 1:
         i2c_bus.write_byte_data(i2c_address1, 0, 0x51)
@@ -19,9 +22,20 @@ def skynjun():
         current_value1 = data1[2] * 256 + data1[3]
         current_value2 = data2[2] * 256 + data2[3]
 
-        if current_value1 == 0:
-            current_value1 = 255
-        if current_value2 == 0:
-            current_value2 = 255
+        if last_value1 < 20:
+            current_value1 = 0
+        elif last_value1 > 550:
+            current_value1 = 800
+        
+        if last_value2 < 20:
+            current_value2 = 0
+        elif last_value1 > 550:
+            current_value2 = 800
+
+        last_value1 = current_value1
+        last_value2 = current_value2
+
+        
+
 
         return current_value1, current_value2
