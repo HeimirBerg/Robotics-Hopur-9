@@ -26,12 +26,14 @@ def skynjun():
             current_value1 = 0
         elif last_value1 > 550:
             current_value1 = 800
-        
+        else:
+            pass
         if last_value2 < 20:
             current_value2 = 0
         elif last_value1 > 550:
             current_value2 = 800
-
+        else:
+            pass
         last_value1 = current_value1
         last_value2 = current_value2
 
