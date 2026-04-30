@@ -58,12 +58,7 @@ def velja_radius(hradi):
 
     hradi = int(hradi)
 
-    print("Veldu hversu krappa beygju á að taka:")
-    print("1: Á staðnum")
-    print("2: Kröpp")
-    print("3: Milli-millistig")
-    print("4: Millistig")
-    print("5: Aflíðandi")
+    print(" Veldu hversu krappa beygju á að taka:\n 1: Á staðnum\n 2: Kröpp\n 3: Milli-millistig\n 4: Millistig\n 5: Aflíðandi")
 
     while True:
         try:
