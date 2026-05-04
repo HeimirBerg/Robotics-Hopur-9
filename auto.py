@@ -12,7 +12,7 @@ def autopilot():
 
             if merki == 1:
                 # too close - spin on the spot
-                beyja("Hægri", hradi, -hradi)
+                beygja("Hægri", hradi, -hradi)
 
             elif s0 > 100 and s1 > 100:
                 
@@ -33,4 +33,4 @@ def autopilot():
                     beygja("Vinstri", hradi, max(0, radius))
 
             else:
-                beyja("Hægri", hradi, -hradi)
+                beygja("Hægri", hradi, -hradi)
