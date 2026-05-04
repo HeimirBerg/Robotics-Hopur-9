@@ -5,6 +5,7 @@ def sense1():
         i2c_bus.write_byte_data(i2c_address1, 0, 0x51)
         time.sleep(0.07)
         data1 = i2c_bus.read_i2c_block_data(i2c_address1, 0, 4)
+        time.sleep(0.07)  # let the echo die out before firing sensor 2
 
         i2c_bus.write_byte_data(i2c_address2, 0, 0x51)
         time.sleep(0.07)
