@@ -3,6 +3,8 @@
 
 import evdev
 
+import hreyfing as h
+
 # def get_device_path(device_number: int = 0) -> str:
 #     path = f"/dev/input/event{device_number}"
 #     return path
@@ -65,21 +67,33 @@ if __name__ == "__main__":
 
     print(path, "was selected.\n")
 
+    speed = h.velja_hrada()
+    radius = h.velja_radius(speed)
+
     keyboard = evdev.InputDevice(path)
 
-    for event in keyboard.read_loop():
-        if event.type == evdev.ecodes.EV_KEY:
-            key = evdev.categorize(event)
-            
-            if key.keystate == key.key_down or key.keystate == key.key_hold:
-                if key.keycode == 'KEY_W':
-                    print("Er hér í w")
-                elif key.keycode == 'KEY_S':
-                    print("Er hér í s")
-                elif key.keycode == 'KEY_A':
-                    print("Er hér í a")
-                elif key.keycode == 'KEY_D':
-                    print("Er hér í d")
-                    
-            elif key.keystate == key.key_up:
-                print("Fór hingað")
+    try:
+        for event in keyboard.read_loop():
+            if event.type == evdev.ecodes.EV_KEY:
+                key = evdev.categorize(event)
+                
+                if key.keystate == key.key_down or key.keystate == key.key_hold:
+                    if key.keycode == 'KEY_W':
+                        h.fara_afram(speed)
+                    elif key.keycode == 'KEY_S':
+                        h.fara_aftur(speed)
+                    elif key.keycode == 'KEY_A':
+                        h.beygja("Vinstri", speed, radius)
+                    elif key.keycode == 'KEY_D':
+                        h.beygja("Hægri", speed, radius)
+                    elif key.keycode == 'KEY_E':
+                        speed = h.velja_hrada()
+                    elif key.keycode == 'KEY_F':
+                        radius = h.velja_radius(speed)
+                        
+                elif key.keystate == key.key_up:
+                    h.stoppa()
+                    print("Stoppaði!!!")
+    except KeyboardInterrupt:
+        h.stoppa()
+        print("\n--- Ó fokk ---\n")
