@@ -3,6 +3,8 @@ from servo import *
 from hreyfing import *
 
 
+import time
+
 def autopilot(servoenable=True):
     s0, s1 = 200, 200
     hradi = 50
@@ -10,7 +12,11 @@ def autopilot(servoenable=True):
         servo_iter = servo_move() if servoenable else [(90, 90)]
 
         for servo0, servo1 in servo_iter:
-            s0, s1, merki = sense(s0, s1)
+            try:
+                s0, s1, merki = sense(s0, s1)
+            except OSError:
+                time.sleep(0.1)
+                continue
 
             if merki == 1:
                 beygja("Hægri", hradi, -hradi)
@@ -26,3 +32,6 @@ def autopilot(servoenable=True):
 
             else:
                 beygja("Hægri", hradi, -hradi)
+
+        if not servoenable:
+            time.sleep(0.1)  
