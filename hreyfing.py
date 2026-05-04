@@ -90,7 +90,7 @@ def velja_radius(hradi):
     radius = int(radius)
     return radius
 
-def reikna_beyju(servo_angle, distance, hradi=150):
+def reikna_beyju(servo_angle, distance, hradi):
     radius = int(hradi * (distance - 20) / 80)
     radius = max(0, radius)
 
