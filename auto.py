@@ -7,7 +7,9 @@ def autopilot(servoenable=True):
     s0, s1 = 200, 200
     hradi = 50
     while True:
-        for servo0, servo1 in servo_move():
+        servo_iter = servo_move() if servoenable else [(90, 90)]
+
+        for servo0, servo1 in servo_iter:
             s0, s1, merki = sense(s0, s1)
 
             if merki == 1:
