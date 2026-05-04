@@ -3,21 +3,33 @@ from adafruit_servokit import ServoKit
 
 kit = ServoKit(channels=8)
 
-kit.servo[0].angle = 45
-kit.servo[1].angle = 145
-time.sleep(1)
-kit.servo[0].angle = 180
-kit.servo[1].angle = 0
-time.sleep(1)
-kit.servo[0].angle = 45
-kit.servo[1].angle = 145
-time.sleep(1) 
-kit.servo[0].angle = 180
-kit.servo[1].angle = 0
-time.sleep(1) 
-kit.servo[0].angle = None
-kit.servo[1].angle = None
-print("keyrt")
-
 def servo_move():
-    pass
+    while True:
+        # Hreyfing til hliðar
+        for angle in range(0, 146):
+            servo0_angle = 180 - angle
+            servo1_angle = angle
+
+            kit.servo[0].angle = servo0_angle
+            kit.servo[1].angle = servo1_angle
+
+            time.sleep(0.0025)
+
+            yield servo0_angle, servo1_angle
+
+        # Hreyfing fram
+        for angle in range(145, -1, -1):
+            servo0_angle = 180 - angle
+            servo1_angle = angle
+
+            kit.servo[0].angle = servo0_angle
+            kit.servo[1].angle = servo1_angle
+
+            time.sleep(0.0025)
+
+
+            yield servo0_angle, servo1_angle
+
+
+#for current_angle in servo_move():
+    print("Current angle:", current_angle)
