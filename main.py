@@ -21,4 +21,4 @@ try:
             print("Vinsamlegast veldu gildandi tölu")
 except KeyboardInterrupt:
     stoppa()
-    print("Ó fokk")
+    print("\n-------- Ó fokk --------")
