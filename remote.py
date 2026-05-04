@@ -7,7 +7,12 @@ def get_device_path(device_number: int = 0) -> str:
     path = f"/dev/input/event{device_number}"
     return path
 
-
+def find_input_devices() -> None:
+    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+    print("\nFound devices:")
+    for device in devices:
+        print(device.path, device.name, device.phys)
+    print("--- END ---\n")
 
 
 # if __name__ == "__main__":
@@ -34,6 +39,4 @@ def get_device_path(device_number: int = 0) -> str:
 
 # Test code
 if __name__ == "__main__":
-    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
-    for device in devices:
-        print(device.path, device.name, device.phys)
+    find_input_devices()
