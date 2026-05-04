@@ -21,7 +21,7 @@ def fara_aftur(hradi):
     hradi = int(hradi)
     return senda(-hradi,hradi)
 
-def beyja(att,hradi,radius):
+def beygja(att,hradi,radius):
     hradi = int(hradi)
     radius = int(radius)
 
@@ -37,7 +37,6 @@ def stoppa():
     return senda(0,0)
 
 def velja_hrada():
-    
     while True:
         try:
             hradi = int(input("Veldu hraða [15-255]: "))
@@ -90,12 +89,12 @@ def velja_radius(hradi):
     radius = int(radius)
     return radius
 
-def reikna_beyju(servo_angle, distance, hradi):
+def reikna_beygju(servo_angle, distance, hradi):
     radius = int(hradi * (distance - 20) / 80)
     radius = max(0, radius)
 
     if servo_angle < 90:
-        return beyja("Hægri", hradi, radius)
+        return beygja("Hægri", hradi, radius)
     else:
-        return beyja("Vinstri", hradi, radius)
+        return beygja("Vinstri", hradi, radius)
     
