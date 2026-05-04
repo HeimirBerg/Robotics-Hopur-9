@@ -5,7 +5,7 @@ from hreyfing import *
 
 def autopilot():
     s0, s1 = 200, 200
-    hradi = 150
+    hradi = 50
     while True:
         for servo0, servo1 in servo_move():
             s0, s1, merki = sense(s0, s1)
