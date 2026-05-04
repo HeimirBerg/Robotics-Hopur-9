@@ -15,7 +15,7 @@ def servo_move():
 
         time.sleep(0.0025)
 
-        yield servo0_angle, servo1_angle
+        return servo0_angle, servo1_angle
 
     # Hreyfing fram
     for angle in range(145, -1, -1):
@@ -28,8 +28,8 @@ def servo_move():
         time.sleep(0.0025)
 
 
-        yield servo0_angle, servo1_angle
+        return servo0_angle, servo1_angle
 
 
 #for current_angle in servo_move():
-    print("Current angle:", current_angle)
+#    print("Current angle:", current_angle)
