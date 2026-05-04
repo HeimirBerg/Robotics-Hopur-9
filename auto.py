@@ -11,28 +11,27 @@ def autopilot():
             s0, s1, merki = sense(s0, s1)
 
             if merki == 1:
-                # too close - spin on the spot
-                beyja("Hægri", hradi, -hradi)
+                
+                beygja("Hægri", hradi, -hradi)
 
             elif s0 > 100 and s1 > 100:
-                # both clear - go straight
+                
                 fara_afram(hradi)
 
             elif s0 > 100 and s1 <= 100:
-                # sensor 0 found clear space at servo0's current angle
                 radius = int(hradi * (s1 - 20) / 80)
                 if servo0 < 90:
-                    beyja("Hægri", hradi, max(0, radius))
+                    beygja("Hægri", hradi, max(0, radius))
                 else:
-                    beyja("Vinstri", hradi, max(0, radius))
+                    beygja("Vinstri", hradi, max(0, radius))
 
             elif s1 > 100 and s0 <= 100:
-                # sensor 1 found clear space at servo1's current angle
                 radius = int(hradi * (s0 - 20) / 80)
                 if servo1 < 90:
-                    beyja("Hægri", hradi, max(0, radius))
+                    beygja("Hægri", hradi, max(0, radius))
                 else:
-                    beyja("Vinstri", hradi, max(0, radius))
+                    beygja("Vinstri", hradi, max(0, radius))
 
             else:
-                beyja("Hægri", hradi, -hradi)
+                # both blocked - spin
+                beygja("Hægri", hradi, -hradi)
