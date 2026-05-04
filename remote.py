@@ -33,7 +33,7 @@ def select_input_device(device_name: str) -> str | None:
     device_path = ""
 
     try:
-        devices = [evdev.InputDevice(path) for path in evdev.list_devices]
+        devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
 
         for device in devices:
             if device_name.lower() == device.name.lower():
