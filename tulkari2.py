@@ -103,5 +103,5 @@ def tekkh(skyn1, skyn2): # Skoðum hvort það sé hægt að beygja til hægri
 uskyn1 = 500
 uskyn2 = 500
 while True:
-    sjon = hlidar(sense(uskyn1, uskyn2))
+    sjon = hlidar(uskyn1, uskyn2)
     print(f"Skynjari 1: {sjon[0]} cm    Skynjari 2: {sjon[1]} cm")
