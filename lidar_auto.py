@@ -18,28 +18,31 @@ def autopilot():
                 continue
 
             if merki == 1:
-                print(f"s0={s0:.0f} s1={s1:.0f} → TURN HARD RIGHT (danger)")
+                # Too close — turn hard right for 0.5s then re-check
                 beygja("Hægri", hradi, -hradi)
+                time.sleep(0.5)
 
             elif s0 > 100 and s1 > 100:
-                print(f"s0={s0:.0f} s1={s1:.0f} → FORWARD")
+                # Both clear — go forward
                 fara_afram(hradi)
+                time.sleep(0.05)
 
             elif s0 > 100 and s1 <= 100:
+                # Obstacle on right — turn left
                 radius = int(hradi * (s1 - 20) / 80)
-                print(f"s0={s0:.0f} s1={s1:.0f} → TURN LEFT")
                 beygja("Vinstri", hradi, max(0, radius))
+                time.sleep(0.3)
 
             elif s1 > 100 and s0 <= 100:
+                # Obstacle on left — turn right
                 radius = int(hradi * (s0 - 20) / 80)
-                print(f"s0={s0:.0f} s1={s1:.0f} → TURN RIGHT")
                 beygja("Hægri", hradi, max(0, radius))
+                time.sleep(0.3)
 
             else:
-                print(f"s0={s0:.0f} s1={s1:.0f} → TURN HARD RIGHT (blocked)")
+                # Both blocked — turn hard right
                 beygja("Hægri", hradi, -hradi)
-
-            time.sleep(0.05)
+                time.sleep(0.5)
 
     finally:
         stop_lidar()
