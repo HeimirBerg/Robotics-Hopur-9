@@ -7,7 +7,7 @@ import time
 
 def autopilot(servoenable=True):
     s0, s1 = 200, 200
-    hradi = 50
+    hradi = 200
     while True:
         servo_iter = servo_move() if servoenable else [(90, 90)]
 
