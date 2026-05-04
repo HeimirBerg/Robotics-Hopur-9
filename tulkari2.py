@@ -61,8 +61,8 @@ def hlutfall(merki1, merki2):
     return hlutf, lengri
     
 def hlidar(skyn1, skyn2): # Þetta fall er ætlað til þess að finna hvert á að beygja ef við lendum á hindrun
-    kit.servo[0].angle = 90
-    kit.servo[1].angle = 90
+    kit.servo[0].angle = 45
+    kit.servo[1].angle = 145
     time.sleep(1)  # Gefum örmum tíma til að hreyfa sig áður en við tökum mælingu
     x = sense(skyn1, skyn2)
     finnatt = hlutfall(x[0], x[1])
@@ -72,28 +72,28 @@ def hlidar(skyn1, skyn2): # Þetta fall er ætlað til þess að finna hvert á 
         uttak =  1
     elif finnatt[1] == 2:
         uttak = 2
-    kit.servo[0].angle = 0
-    kit.servo[1].angle = 0
+    kit.servo[0].angle = 145
+    kit.servo[1].angle = 45
     time.sleep(1)
     return uttak 
     
-def tekkv(skyn1, skyn2):
-    kit.servo[0].angle = 0
+def tekkv(skyn1, skyn2): # Skoðum hvort það sé hægt að beygja til vinstri
+    kit.servo[0].angle = 145
     time.sleep(1)
     x = sense(skyn1, skyn2)
     plass = x[0]
-    kit.servo[0].angle = 130
+    kit.servo[0].angle = 180
     if plass == 10:
         return False
     elif plass >= 100:
         return True
     
-def tekkh(skyn1, skyn2):
-    kit.servo[1].angle = 130
+def tekkh(skyn1, skyn2): # Skoðum hvort það sé hægt að beygja til hægri
+    kit.servo[1].angle = 45
     time.sleep(1)
     x = sense(skyn1, skyn2)
-    plass = x[0]
-    kit.servo[0].angle = 0
+    plass = x[1]
+    kit.servo[1].angle = 0
     if plass == 10:
         return False
     elif plass >= 100:
