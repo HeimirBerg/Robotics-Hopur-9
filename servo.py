@@ -6,7 +6,7 @@ kit = ServoKit(channels=8)
 def servo_move():
     
     # Hreyfing til hliðar
-    for angle in range(0, 146, 5):
+    for angle in range(0, 146, 10):
         servo0_angle = 180 - angle
         servo1_angle = angle
 
@@ -18,7 +18,7 @@ def servo_move():
         yield servo0_angle, servo1_angle
 
     # Hreyfing fram
-    for angle in range(145, -1, -5):
+    for angle in range(145, -1, -10):
         servo0_angle = 180 - angle
         servo1_angle = angle
 
