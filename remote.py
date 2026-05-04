@@ -28,19 +28,24 @@ def select_input_device(device_name: str) -> str | None:
     :device_name: Nafn tækisins. Miðju gildið í lista með tækjum \"path || name || phys\".
     :Skilar: Slóðinni á tækið með device.path. Ef tæki finnst ekki er skilað None
     """
+
+    # Setup
     device_path = ""
+
     try:
         devices = [evdev.InputDevice(path) for path in evdev.list_devices]
+
         for device in devices:
             if device_name.lower() == device.name.lower():
                 device_path = device.path
                 return device_path
             else:
                 print("No device found.\n")
-                return None
+                return
+            
     except ValueError:
         print("Invalid name entered. Enter a string.\n")
-        return None
+        return
 
 
 # if __name__ == "__main__":
