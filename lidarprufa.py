@@ -18,6 +18,9 @@ _scan_iter = None
 def start_lidar():
     global _lidar, _scan_iter
     _lidar = RPLidar(LIDAR_PORT, baudrate=BAUDRATE)
+    _lidar.stop()
+    time.sleep(0.5)
+    _lidar._serial_port.reset_input_buffer()  # flush stale bytes
     _scan_iter = _lidar.iter_scans()
     print("LiDAR ready")
 
