@@ -10,7 +10,7 @@ i2c_bus = SMBus(1)
 i2c_address1 = 0x71
 i2c_address2 = 0x72
 
-def sense(last1,last2):
+def sense(last1=100,last2=100):
     i2c_bus.write_byte_data(i2c_address1, 0, 0x51) # Mæli í cm
     time.sleep(0.07)  # 70ms
     i2c_bus.write_byte_data(i2c_address2, 0, 0x51)
@@ -59,7 +59,7 @@ def hlutfall(merki1, merki2):
         lengri = 2
     return hlutf, lengri
     
-def hlidar(skyn1, skyn2): # Þetta fall er ætlað til þess að finna hvert á að beygja ef við lendum á hindrun
+"""def hlidar(skyn1, skyn2): # Þetta fall er ætlað til þess að finna hvert á að beygja ef við lendum á hindrun
     kit.servo[0].angle = 45
     kit.servo[1].angle = 145
     time.sleep(1)  # Gefum örmum tíma til að hreyfa sig áður en við tökum mælingu
@@ -76,8 +76,9 @@ def hlidar(skyn1, skyn2): # Þetta fall er ætlað til þess að finna hvert á 
     kit.servo[1].angle = 45
     time.sleep(1)
     #return uttak 
+    """
     
-def tekkv(skyn1, skyn2): # Skoðum hvort það sé hægt að beygja til vinstri
+"""def tekkv(skyn1, skyn2): # Skoðum hvort það sé hægt að beygja til vinstri
     kit.servo[0].angle = 145
     time.sleep(1)
     x = sense(skyn1, skyn2)
@@ -86,22 +87,8 @@ def tekkv(skyn1, skyn2): # Skoðum hvort það sé hægt að beygja til vinstri
     if plass == 10:
         return False
     elif plass >= 100:
-        return True
+        return True """
     
-def tekkh(skyn1, skyn2): # Skoðum hvort það sé hægt að beygja til hægri
-    kit.servo[1].angle = 45
-    time.sleep(1)
-    x = sense(skyn1, skyn2)
-    plass = x[1]
-    kit.servo[1].angle = 0
-    if plass == 10:
-        return False
-    elif plass >= 100:
-        return True
-
-
 uskyn1 = 500
 uskyn2 = 500
-while True:
-    sjon = hlidar(uskyn1, uskyn2)
-    print(f"Skynjari 1: {sjon[0]} cm    Skynjari 2: {sjon[1]} cm")
+
