@@ -26,23 +26,23 @@ def sense(last1=200,last2=200):
     if current_value2 < 15:
         current_value2 = 10
 
-    '''if current_value1 < 15 and last1 < 50:      # Eih bull sem ég skil ekki sjálfur
+    if current_value1 < 15 and last1 < 50:      # Eih bull sem ég skil ekki sjálfur
         current_value1 = 10
-        print("of nálægt")
+        sign = 1 #of nálægt
     elif current_value1 < 15 and last1 >= 50:
         current_value1 = last1
-        print("langt")
+        sign = 2 #of langt
     if current_value2 < 15 and last2 < 50:         
         current_value2 = 10
-        print("of nálægt")
+        sign = 1 # of nálægt
     elif current_value1 < 15 and last2 >= 50:
         current_value1 = last2
-        print("langt")'''
+        sign = 2 # of langt
     
     last1 = current_value1
     last2 = current_value2
-
-    return last1, last2
+    
+    return last1, last2, sign
 
 def hlutfall(merki1, merki2):
     if merki1 < 100 or merki2 < 100: # Notum fallið ef fjarlægð frá hlut er undir 100cm
