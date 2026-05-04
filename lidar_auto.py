@@ -18,24 +18,29 @@ def autopilot():
                 continue
 
             if merki == 1:
+                # Too close — turn hard right for 0.5s then re-check
                 beygja("Hægri", hradi, -hradi)
                 time.sleep(0.5)
 
             elif s0 > 100 and s1 > 100:
+                # Both clear — go forward
                 fara_afram(hradi)
                 time.sleep(0.05)
 
             elif s0 > 100 and s1 <= 100:
+                # Obstacle on right — turn left
                 radius = int(hradi * (s1 - 20) / 80)
                 beygja("Vinstri", hradi, max(0, radius))
                 time.sleep(0.3)
 
             elif s1 > 100 and s0 <= 100:
+                # Obstacle on left — turn right
                 radius = int(hradi * (s0 - 20) / 80)
                 beygja("Hægri", hradi, max(0, radius))
                 time.sleep(0.3)
 
             else:
+                # Both blocked — turn hard right
                 beygja("Hægri", hradi, -hradi)
                 time.sleep(0.5)
 
