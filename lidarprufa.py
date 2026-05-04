@@ -9,6 +9,7 @@ MIN_QUALITY = 10
 FRONT_ZONE = (330, 30)
 LEFT_ZONE  = (30, 150)
 RIGHT_ZONE = (210, 330)
+AUTO_STANDNY = False
 
 _lidar = None
 _scan_iter = None
