@@ -64,6 +64,7 @@ def hlidar(skyn1, skyn2): # Þetta fall er ætlað til þess að finna hvert á 
     kit.servo[1].angle = 145
     time.sleep(1)  # Gefum örmum tíma til að hreyfa sig áður en við tökum mælingu
     x = sense(skyn1, skyn2)
+    print(f"Skynjari 1: {x[0]} cm    Skynjari 2: {x[1]} cm")
     finnatt = hlutfall(x[0], x[1])
     if finnatt[1] == 0:
         uttak = random.randint(1,2)
@@ -74,7 +75,7 @@ def hlidar(skyn1, skyn2): # Þetta fall er ætlað til þess að finna hvert á 
     kit.servo[0].angle = 145
     kit.servo[1].angle = 45
     time.sleep(1)
-    return uttak 
+    #return uttak 
     
 def tekkv(skyn1, skyn2): # Skoðum hvort það sé hægt að beygja til vinstri
     kit.servo[0].angle = 145
