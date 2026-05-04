@@ -3,6 +3,7 @@
 import time
 from smbus import SMBus
 from adafruit_servokit import ServoKit
+import random
 
 kit = ServoKit(channels=8)
 i2c_bus = SMBus(1)
@@ -65,9 +66,8 @@ def hlidar(skyn1, skyn2): # Þetta fall er ætlað til þess að finna hvert á 
     time.sleep(1)  # Gefum örmum tíma til að hreyfa sig áður en við tökum mælingu
     x = sense(skyn1, skyn2)
     finnatt = hlutfall(x[0], x[1])
-    uttak = 0
     if finnatt[1] == 0:
-        uttak = 0
+        uttak = random.randint(1,2)
     elif finnatt[1] == 1:
         uttak =  1
     elif finnatt[1] == 2:
@@ -78,15 +78,26 @@ def hlidar(skyn1, skyn2): # Þetta fall er ætlað til þess að finna hvert á 
     return uttak 
     
 def tekkv(skyn1, skyn2):
-    kit.servo[0].angle = 90
+    kit.servo[0].angle = 0
     time.sleep(1)
     x = sense(skyn1, skyn2)
     plass = x[0]
+    kit.servo[0].angle = 130
     if plass == 10:
-        pass # ??
-    elif plass >= 150:
-        pass # Beygjum í þá áttina
-
+        return False
+    elif plass >= 100:
+        return True
+    
+def tekkh(skyn1, skyn2):
+    kit.servo[1].angle = 130
+    time.sleep(1)
+    x = sense(skyn1, skyn2)
+    plass = x[0]
+    kit.servo[0].angle = 0
+    if plass == 10:
+        return False
+    elif plass >= 100:
+        return True
 
 
 uskyn1 = 500
