@@ -1,5 +1,5 @@
 from manual import *
-from auto import *
+from lidar_auto import *
 
 try:
     while True:
