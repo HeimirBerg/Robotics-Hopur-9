@@ -3,11 +3,16 @@
 
 import evdev
 
-def get_device_path(device_number: int = 0) -> str:
-    path = f"/dev/input/event{device_number}"
-    return path
+# def get_device_path(device_number: int = 0) -> str:
+#     path = f"/dev/input/event{device_number}"
+#     return path
 
 def find_input_devices() -> None:
+    """
+    Fall sem finnur öll innput tæki í möpunni \"/dev/input/\".
+
+    :Return: Prentar í Terminal lista með [path, name, phys].
+    """
     devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
     print("\nFound devices:")
     for device in devices:
