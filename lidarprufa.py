@@ -1,10 +1,9 @@
 import time
 from rplidar import RPLidar
 
-# --- Configuration ---
 LIDAR_PORT = '/dev/ttyUSB0'
 BAUDRATE = 1000000
-TOO_CLOSE = 20      # cm - danger zone
+TOO_CLOSE = 20
 MIN_QUALITY = 10
 
 FRONT_ZONE = (330, 30)
@@ -14,28 +13,17 @@ RIGHT_ZONE = (210, 330)
 _lidar = None
 _scan_iter = None
 
-
 def start_lidar():
     global _lidar, _scan_iter
     _lidar = RPLidar(LIDAR_PORT, baudrate=BAUDRATE)
-    _lidar.stop()
-    time.sleep(1)
+    time.sleep(3)
     _scan_iter = _lidar.iter_scans()
-    # Discard first few scans to flush stale buffer data
-    print("Warming up...")
-    for _ in range(5):
-        try:
-            next(_scan_iter)
-        except:
-            pass
     print("LiDAR ready")
-
 
 def stop_lidar():
     if _lidar:
         _lidar.stop()
         _lidar.disconnect()
-
 
 def _min_dist_in_zone(scan, angle_start, angle_end):
     distances = []
@@ -49,7 +37,6 @@ def _min_dist_in_zone(scan, angle_start, angle_end):
         if in_zone:
             distances.append(dist_mm / 10.0)
     return min(distances) if distances else 999
-
 
 def sense(last1=200, last2=200):
     try:

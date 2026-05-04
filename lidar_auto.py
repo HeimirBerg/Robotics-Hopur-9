@@ -4,7 +4,7 @@ import time
 
 def autopilot():
     s0, s1 = 200, 200
-    hradi = 50
+    hradi = 200
 
     start_lidar()
 
@@ -36,4 +36,4 @@ def autopilot():
                 time.sleep(0.5)
 
     finally:
-        stop_lidar
+        stop_lidar()
