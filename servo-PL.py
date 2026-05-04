@@ -30,5 +30,5 @@ def servo_move():
             yield servo0_angle, servo1_angle
 
 
-#for current_angle in servo_move():
+for current_angle in servo_move():
     print("Current angle:", current_angle)
