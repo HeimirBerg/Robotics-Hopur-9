@@ -16,15 +16,17 @@ def find_input_devices() -> None:
     devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
     print("\nFound devices:")
     for device in devices:
-        print(device.path, device.name, device.phys, sep=" -- ")
+        print(device.path, device.name, device.phys, sep="|")
     print("--- END ---\n")
 
 def select_input_device(device_name: str) -> None:
     """
     Velur input tæki í möppunni \"/dev/input/\" eftir nafni tækisins.
 
-    :device_name: 
+    :device_name: Nafn tækisins. Miðju gildið í lista með tækjum \"path -- name -- phys\".
+    :Skilar: Slóðinni á tækið með device.path.
     """
+
     pass
 
 # if __name__ == "__main__":
@@ -52,3 +54,4 @@ def select_input_device(device_name: str) -> None:
 # Test code
 if __name__ == "__main__":
     find_input_devices()
+    select_input_device()
