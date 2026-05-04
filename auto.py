@@ -11,8 +11,8 @@ def autopilot():
             s0, s1, merki = sense(s0, s1)
 
             if merki == 1:
-                
-                beygja("Hægri", hradi, -hradi)
+                # too close - spin on the spot
+                beyja("Hægri", hradi, -hradi)
 
             elif s0 > 100 and s1 > 100:
                 
@@ -33,5 +33,4 @@ def autopilot():
                     beygja("Vinstri", hradi, max(0, radius))
 
             else:
-                # both blocked - spin
-                beygja("Hægri", hradi, -hradi)
+                beyja("Hægri", hradi, -hradi)
