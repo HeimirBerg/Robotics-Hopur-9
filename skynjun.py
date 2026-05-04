@@ -20,6 +20,7 @@ def sense(last1=200,last2=200):
 
     current_value1 = data1[2] * 256 + data1[3] # Reiknum saman hvað kom út
     current_value2 = data2[2] * 256 + data2[3]
+    sign = 0
 
     if current_value1 < 15:   # Skilgreinum ekkert endurkast sem 10
         current_value1 = 10
