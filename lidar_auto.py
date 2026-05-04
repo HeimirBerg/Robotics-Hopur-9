@@ -1,4 +1,4 @@
-from lidarprufa import start_lidar, stop_lidar, sense, _min_dist_in_zone, _latest_scan, _scan_lock, FRONT_ZONE, LEFT_ZONE, RIGHT_ZONE
+from lidarprufa import start_lidar, stop_lidar, sense
 from hreyfing import *
 import time
 
@@ -12,14 +12,6 @@ def autopilot():
         while True:
             try:
                 s0, s1, merki = sense(s0, s1)
-
-                with _scan_lock:
-                    scan = list(_latest_scan)
-                front = _min_dist_in_zone(scan, *FRONT_ZONE)
-                left  = _min_dist_in_zone(scan, *LEFT_ZONE)
-                right = _min_dist_in_zone(scan, *RIGHT_ZONE)
-                print(f"front={front:.0f}cm  left={left:.0f}cm  right={right:.0f}cm  s0={s0:.0f}  s1={s1:.0f}  merki={merki}")
-
             except Exception as e:
                 print(f"Sense error: {e}")
                 time.sleep(0.1)
@@ -44,4 +36,4 @@ def autopilot():
                 time.sleep(0.5)
 
     finally:
-        stop_lidar()
+        stop_lidar
