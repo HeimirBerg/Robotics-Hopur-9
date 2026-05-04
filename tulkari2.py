@@ -43,7 +43,6 @@ def sense(last1,last2):
     last1 = current_value1
     last2 = current_value2
 
-    print(f"Skynjari 1: {current_value1} cm    Skynjari 2: {current_value2} cm")
     return last1, last2
 
 def hlutfall(merki1, merki2):
@@ -103,6 +102,5 @@ def tekkh(skyn1, skyn2): # Skoðum hvort það sé hægt að beygja til hægri
 uskyn1 = 500
 uskyn2 = 500
 while True:
-    sjon = sense(uskyn1,uskyn2)
-    uskyn1 = sjon[0]
-    uskyn2 = sjon[1]
+    sjon = hlidar(sense(uskyn1, uskyn2))
+    print(f"Skynjari 1: {sjon[0]} cm    Skynjari 2: {sjon[1]} cm")
