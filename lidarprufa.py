@@ -43,7 +43,13 @@ def start_lidar():
     _running = True
     t = threading.Thread(target=_scan_worker, daemon=True)
     t.start()
-    time.sleep(2)
+    # Wait until scan data actually arrives (up to 10 seconds)
+    print("Waiting for LiDAR data...")
+    for _ in range(100):
+        time.sleep(0.1)
+        with _scan_lock:
+            if len(_latest_scan) > 0:
+                break
     print("LiDAR ready")
 
 def stop_lidar():
