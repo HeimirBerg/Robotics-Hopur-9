@@ -1,5 +1,6 @@
-from skynjun import *
+from skynjun2 import *
 from servo import *
+
 
 def autopilot():
     s0, s1 = 200,200
