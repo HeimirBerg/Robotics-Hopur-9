@@ -80,4 +80,4 @@ if __name__ == "__main__":
         name = input("Sláðu inn nafn lyklaborðs: ")
         path = select_input_device(name)
 
-    print(path, "was selected.")
+    print(path, "was selected.\n")
