@@ -26,7 +26,7 @@ def sense(last1=200,last2=200):
     if current_value2 < 15:
         current_value2 = 10
 
-    if current_value1 < 15 and last1 < 50:      # Eih bull sem ég skil ekki sjálfur
+    '''if current_value1 < 15 and last1 < 50:      # Eih bull sem ég skil ekki sjálfur
         current_value1 = 10
         print("of nálægt")
     elif current_value1 < 15 and last1 >= 50:
@@ -37,7 +37,7 @@ def sense(last1=200,last2=200):
         print("of nálægt")
     elif current_value1 < 15 and last2 >= 50:
         current_value1 = last2
-        print("langt")
+        print("langt")'''
     
     last1 = current_value1
     last2 = current_value2
