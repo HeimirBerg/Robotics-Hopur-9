@@ -1,34 +1,94 @@
+# skynjun
+
 import time
 from smbus import SMBus
+from adafruit_servokit import ServoKit
+import random
 
+kit = ServoKit(channels=8)
 i2c_bus = SMBus(1)
 i2c_address1 = 0x71
 i2c_address2 = 0x72
 
-def skynjun():
-    # Trigger sensor 1, wait, read it
-    i2c_bus.write_byte_data(i2c_address1, 0, 0x51)
-    time.sleep(0.07)
-    data1 = i2c_bus.read_i2c_block_data(i2c_address1, 0, 4)
-
-    # Trigger sensor 2, wait, read it
+def sense(last1=100,last2=100):
+    i2c_bus.write_byte_data(i2c_address1, 0, 0x51) # Mæli í cm
+    time.sleep(0.07)  # 70ms
     i2c_bus.write_byte_data(i2c_address2, 0, 0x51)
-    time.sleep(0.07)
+    time.sleep(0.07)  # 70ms 
+
+    data1 = i2c_bus.read_i2c_block_data(i2c_address1, 0, 4) # Sjáum hvað ég fékk
     data2 = i2c_bus.read_i2c_block_data(i2c_address2, 0, 4)
 
-    current_value1 = data1[2] * 256 + data1[3]
+    current_value1 = data1[2] * 256 + data1[3] # Reiknum saman hvað kom út
     current_value2 = data2[2] * 256 + data2[3]
 
-    # Sensor 1: 0 = too close, 800 = out of range, else = distance in cm
-    if current_value1 == 0 or current_value1 > 550:
-        current_value1 = 800
-    elif current_value1 < 20:
-        current_value1 = 0
+    if current_value1 < 15:   # Skilgreinum ekkert endurkast sem 10
+        current_value1 = 10
+    if current_value2 < 15:
+        current_value2 = 10
 
-    # Sensor 2: same logic
-    if current_value2 == 0 or current_value2 > 550:
-        current_value2 = 800
-    elif current_value2 < 20:
-        current_value2 = 0
+    if current_value1 < 15 and last1 < 50:      # Eih bull sem ég skil ekki sjálfur
+        current_value1 = 10
+        print("of nálægt")
+    elif current_value1 < 15 and last1 >= 50:
+        current_value1 = last1
+        print("langt")
+    if current_value2 < 15 and last2 < 50:         
+        current_value2 = 10
+        print("of nálægt")
+    elif current_value1 < 15 and last2 >= 50:
+        current_value1 = last2
+        print("langt")
+    
+    last1 = current_value1
+    last2 = current_value2
 
-    return current_value1, current_value2
+    return last1, last2
+
+def hlutfall(merki1, merki2):
+    if merki1 < 100 or merki2 < 100: # Notum fallið ef fjarlægð frá hlut er undir 100cm
+        pass
+    if merki1 == merki2: # Hér finnum við svo hlutfallið milli fjarlægðanna og hvor þeirra er lengra frá hindrun.
+        hlutf = 1
+        lengri = 0
+    elif merki1 > merki2:
+        hlutf = merki1/merki2
+        lengri = 1
+    elif merki1 < merki2:
+        hlutf = merki2/merki1
+        lengri = 2
+    return hlutf, lengri
+    
+"""def hlidar(skyn1, skyn2): # Þetta fall er ætlað til þess að finna hvert á að beygja ef við lendum á hindrun
+    kit.servo[0].angle = 45
+    kit.servo[1].angle = 145
+    time.sleep(1)  # Gefum örmum tíma til að hreyfa sig áður en við tökum mælingu
+    x = sense(skyn1, skyn2)
+    print(f"Skynjari 1: {x[0]} cm    Skynjari 2: {x[1]} cm")
+    finnatt = hlutfall(x[0], x[1])
+    if finnatt[1] == 0:
+        uttak = random.randint(1,2)
+    elif finnatt[1] == 1:
+        uttak =  1
+    elif finnatt[1] == 2:
+        uttak = 2
+    kit.servo[0].angle = 145
+    kit.servo[1].angle = 45
+    time.sleep(1)
+    #return uttak 
+    """
+    
+"""def tekkv(skyn1, skyn2): # Skoðum hvort það sé hægt að beygja til vinstri
+    kit.servo[0].angle = 145
+    time.sleep(1)
+    x = sense(skyn1, skyn2)
+    plass = x[0]
+    kit.servo[0].angle = 180
+    if plass == 10:
+        return False
+    elif plass >= 100:
+        return True """
+    
+uskyn1 = 500
+uskyn2 = 500
+
