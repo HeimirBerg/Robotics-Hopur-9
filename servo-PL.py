@@ -29,5 +29,4 @@ def servo_move():
 
 
 for current_angle in servo_move():
-    #print("Current angle:", current_angle)
-    pass
+    print("Current angle:", current_angle)
