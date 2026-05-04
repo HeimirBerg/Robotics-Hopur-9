@@ -7,6 +7,7 @@ import evdev
 #     path = f"/dev/input/event{device_number}"
 #     return path
 
+
 def find_input_devices() -> None:
     """
     Fall sem finnur öll innput tæki í möpunni \"/dev/input/\".
@@ -19,15 +20,28 @@ def find_input_devices() -> None:
         print(device.path, device.name, device.phys, sep=" || ")
     print("--- END ---\n")
 
-def select_input_device(device_name: str) -> None:
+
+def select_input_device(device_name: str) -> str | None:
     """
     Velur input tæki í möppunni \"/dev/input/\" eftir nafni tækisins.
 
-    :device_name: Nafn tækisins. Miðju gildið í lista með tækjum \"path -- name -- phys\".
-    :Skilar: Slóðinni á tækið með device.path.
+    :device_name: Nafn tækisins. Miðju gildið í lista með tækjum \"path || name || phys\".
+    :Skilar: Slóðinni á tækið með device.path. Ef tæki finnst ekki er skilað None
     """
+    device_path = ""
+    try:
+        devices = [evdev.InputDevice(path) for path in evdev.list_devices]
+        for device in devices:
+            if device_name.lower() == device.name.lower():
+                device_path = device.path
+                return device_path
+            else:
+                print("No device found.\n")
+                return None
+    except ValueError:
+        print("Invalid name entered. Enter a string.\n")
+        return None
 
-    pass
 
 # if __name__ == "__main__":
 #     path = get_device_path(2)
@@ -53,5 +67,12 @@ def select_input_device(device_name: str) -> None:
 
 # Test code
 if __name__ == "__main__":
+    path = None
+
     find_input_devices()
-    select_input_device()
+
+    while path == None:
+        name = input("Sláðu inn nafn lyklaborðs: ")
+        path = select_input_device(name)
+
+    print(path, "was selected.")
