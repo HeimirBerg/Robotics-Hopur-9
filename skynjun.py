@@ -10,7 +10,7 @@ i2c_bus = SMBus(1)
 i2c_address1 = 0x71
 i2c_address2 = 0x72
 
-def sense(last1=100,last2=100):
+def sense(last1=200,last2=200):
     i2c_bus.write_byte_data(i2c_address1, 0, 0x51) # Mæli í cm
     time.sleep(0.07)  # 70ms
     i2c_bus.write_byte_data(i2c_address2, 0, 0x51)
