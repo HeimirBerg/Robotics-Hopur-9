@@ -89,9 +89,12 @@ def velja_radius(hradi):
     radius = int(radius)
     return radius
 
-def reikna_beygju(servo_angle, distance, hradi):
+def reikna_beygju(servo_angle, distance, hradi, servoenable=True):
     radius = int(hradi * (distance - 20) / 80)
     radius = max(0, radius)
+
+    if not servoenable:
+        return beygja("Beint", hradi, radius)
 
     if servo_angle < 90:
         return beygja("Hægri", hradi, radius)
