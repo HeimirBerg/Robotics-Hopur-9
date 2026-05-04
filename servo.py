@@ -18,3 +18,6 @@ time.sleep(1)
 kit.servo[0].angle = None
 kit.servo[1].angle = None
 print("keyrt")
+
+def servo_movement(angle):
+    pass
