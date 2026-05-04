@@ -59,6 +59,37 @@ def hlutfall(merki1, merki2):
         lengri = 2
     return hlutf, lengri
     
+def Lidar():
+    # Hreyfing til hliðar
+    for angle in range(0, 146):
+        servo0_angle = 180 - angle
+        servo1_angle = angle
+
+        kit.servo[0].angle = servo0_angle
+        kit.servo[1].angle = servo1_angle
+        sjon = sense(s1,s2)
+        s1 = sjon[0]
+        s2 = sjon[1]
+        time.sleep(0.001)
+
+        yield servo0_angle, servo1_angle, s1, s2
+
+    # Hreyfing fram
+    for angle in range(145, -1, -1):
+        servo0_angle = 180 - angle
+        servo1_angle = angle
+
+        kit.servo[0].angle = servo0_angle
+        kit.servo[1].angle = servo1_angle
+        sjon = sense(s1,s2)
+        s1 = sjon[0]
+        s2 = sjon[1]
+
+        time.sleep(0.001)
+
+        yield servo0_angle, servo1_angle, s1, s2
+
+
 """def hlidar(skyn1, skyn2): # Þetta fall er ætlað til þess að finna hvert á að beygja ef við lendum á hindrun
     kit.servo[0].angle = 45
     kit.servo[1].angle = 145
