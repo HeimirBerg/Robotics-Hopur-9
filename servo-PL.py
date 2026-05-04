@@ -13,7 +13,7 @@ def servo_move():
             kit.servo[0].angle = servo0_angle
             kit.servo[1].angle = servo1_angle
 
-            time.sleep(0.005)
+            time.sleep(0.0025)
 
             yield servo0_angle, servo1_angle
 
@@ -25,7 +25,7 @@ def servo_move():
             kit.servo[0].angle = servo0_angle
             kit.servo[1].angle = servo1_angle
 
-            time.sleep(0.005)
+            time.sleep(0.0025)
 
 
             yield servo0_angle, servo1_angle
