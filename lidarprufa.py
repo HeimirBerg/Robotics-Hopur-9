@@ -1,63 +1,113 @@
+import threading
 import time
-from rplidar import RPLidar
+from pyrplidar import PyRPlidar
 
-LIDAR_PORT = '/dev/ttyUSB0'
-BAUDRATE = 1000000
-TOO_CLOSE = 20
-MIN_QUALITY = 10
+# --- LiDAR configuration ---
+LIDAR_PORT  = "/dev/ttyUSB0"
+BAUDRATE    = 1000000
+MOTOR_PWM   = 660
 
-FRONT_ZONE = (330, 30)
-LEFT_ZONE  = (30, 150)
-RIGHT_ZONE = (210, 330)
-AUTO_STANDNY = False
+# --- Sectors (degrees) — adjust if LiDAR is mounted differently ---
+# s0 = front-left zone,  s1 = front-right zone
+LEFT_SECTOR  = (315, 360)   # front-left:  315° → 360°
+RIGHT_SECTOR = (0,   45)    # front-right:   0° →  45°
 
-_lidar = None
-_scan_iter = None
+TOO_CLOSE_CM = 20    # cm — triggers emergency flag
+MAX_RANGE_CM = 300   # cm — ignore readings beyond this
+
+# --- Shared state ---
+_scan_data  = {}          # angle(int) -> distance(cm)
+_lock       = threading.Lock()
+_running    = False
+_thread     = None
+
+
+def _scan_worker():
+    global _running
+    lidar = PyRPlidar()
+    try:
+        lidar.connect(port=LIDAR_PORT, baudrate=BAUDRATE, timeout=3)
+        print("LiDAR connected.")
+        lidar.set_motor_pwm(MOTOR_PWM)
+        time.sleep(1)   # let motor spin up
+
+        scan_gen = lidar.start_scan()
+        current = {}
+
+        for scan in scan_gen():
+            if not _running:
+                break
+
+            angle_deg = round(scan.angle) % 360
+            dist_cm   = scan.distance / 10.0   # mm → cm
+
+            if 0 < dist_cm <= MAX_RANGE_CM:
+                current[angle_deg] = dist_cm
+
+            # Each time a new rotation starts, push the completed sweep
+            if scan.start_flag and current:
+                with _lock:
+                    _scan_data.update(current)
+                current = {}
+
+    except Exception as e:
+        print(f"LiDAR scan error: {e}")
+    finally:
+        try:
+            lidar.set_motor_pwm(0)
+            lidar.stop()
+            lidar.disconnect()
+            print("LiDAR disconnected.")
+        except Exception:
+            pass
+
 
 def start_lidar():
-    global _lidar, _scan_iter
-    _lidar = RPLidar(LIDAR_PORT, baudrate=BAUDRATE)
-    time.sleep(3)
-    _scan_iter = _lidar.iter_scans()
-    print("LiDAR ready")
+    """Start the background LiDAR scanning thread."""
+    global _running, _thread
+    _running = True
+    _thread  = threading.Thread(target=_scan_worker, daemon=True)
+    _thread.start()
+    time.sleep(2)   # wait for first full scan to arrive
+
 
 def stop_lidar():
-    if _lidar:
-        _lidar.stop()
-        _lidar.disconnect()
+    """Stop the background thread cleanly."""
+    global _running
+    _running = False
+    if _thread:
+        _thread.join(timeout=3)
 
-def _min_dist_in_zone(scan, angle_start, angle_end):
-    distances = []
-    for quality, angle, dist_mm in scan:
-        if quality < MIN_QUALITY or dist_mm <= 0:
-            continue
-        if angle_start > angle_end:
-            in_zone = angle >= angle_start or angle <= angle_end
-        else:
-            in_zone = angle_start <= angle <= angle_end
-        if in_zone:
-            distances.append(dist_mm / 10.0)
-    return min(distances) if distances else 999
 
-def sense(last1=200, last2=200):
-    try:
-        scan = next(_scan_iter)
-    except Exception as e:
-        print(f"Scan error: {e}")
-        return last1, last2, 0
+def _sector_min(start_angle, end_angle):
+    """Return the minimum distance (cm) found within a degree sector."""
+    with _lock:
+        data = dict(_scan_data)
 
-    front_dist = _min_dist_in_zone(scan, *FRONT_ZONE)
-    left_dist  = _min_dist_in_zone(scan, *LEFT_ZONE)
-    right_dist = _min_dist_in_zone(scan, *RIGHT_ZONE)
+    if start_angle <= end_angle:
+        values = [v for k, v in data.items() if start_angle <= k <= end_angle]
+    else:
+        # Sector wraps around 360° (e.g. 315–360)
+        values = [v for k, v in data.items() if k >= start_angle or k <= end_angle]
 
-    s0 = min(left_dist, front_dist)
-    s1 = min(right_dist, front_dist)
+    return min(values) if values else None
 
-    if s0 <= 0 or s0 > 300:
-        s0 = last1
-    if s1 <= 0 or s1 > 300:
-        s1 = last2
 
-    merki = 1 if (front_dist < TOO_CLOSE or left_dist < TOO_CLOSE or right_dist < TOO_CLOSE) else 0
+def sense(last0=200, last1=200):
+    """
+    Read the nearest obstacle in the left-front and right-front sectors.
+
+    Returns:
+        s0    — closest obstacle in left-front sector (cm)
+        s1    — closest obstacle in right-front sector (cm)
+        merki — 1 if anything is dangerously close, else 0
+    """
+    left  = _sector_min(*LEFT_SECTOR)
+    right = _sector_min(*RIGHT_SECTOR)
+
+    s0 = left  if left  is not None else last0
+    s1 = right if right is not None else last1
+
+    merki = 1 if (s0 < TOO_CLOSE_CM or s1 < TOO_CLOSE_CM) else 0
 
     return s0, s1, merki
