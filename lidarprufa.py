@@ -36,7 +36,7 @@ def _scan_worker():
                 print("Starting scan...")
                 lidar.stop()
                 time.sleep(0.1)
-                scan_gen = lidar.start_scan()
+                scan_gen = lidar.start_scan_express(0)
                 current  = {}
                 print("Scan running.")
 
