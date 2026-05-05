@@ -8,15 +8,14 @@ BAUDRATE   = 1000000
 MOTOR_PWM  = 660
 
 # --- Sectors (degrees) — adjust if LiDAR is mounted differently ---
-# 0° is assumed to be the front of the robot
-FRONT_SECTOR      = (345, 15)    # directly ahead  ±15°
-FRONT_LEFT_SECTOR = (315, 345)   # front-left
-FRONT_RIGHT_SECTOR = (15, 45)    # front-right
+LEFT_SECTOR  = (315, 360)   # front-left
+RIGHT_SECTOR = (0,   45)    # front-right
 
-MAX_RANGE_CM = 300   # ignore readings beyond this
+TOO_CLOSE_CM = 20
+MAX_RANGE_CM = 300
 
 # --- Shared state ---
-_scan_data = {}          # angle(int) -> distance(cm)
+_scan_data = {}
 _lock      = threading.Lock()
 _running   = False
 _thread    = None
@@ -31,41 +30,26 @@ def _scan_worker():
         lidar.set_motor_pwm(MOTOR_PWM)
         time.sleep(1)
 
-        while _running:
-            try:
-                print("Starting scan...")
-                scan_gen = lidar.start_scan()
-                gen      = scan_gen()
-                current  = {}
-                print("Scan running.")
+        scan_gen = lidar.start_scan()
+        current  = {}
 
-                while _running:
-                    try:
-                        scan = next(gen)
+        for scan in scan_gen():
+            if not _running:
+                break
 
-                        angle_deg = round(scan.angle) % 360
-                        dist_cm   = scan.distance / 10.0
+            angle_deg = round(scan.angle) % 360
+            dist_cm   = scan.distance / 10.0
 
-                        if 0 < dist_cm <= MAX_RANGE_CM:
-                            current[angle_deg] = dist_cm
+            if 0 < dist_cm <= MAX_RANGE_CM:
+                current[angle_deg] = dist_cm
 
-                        if scan.start_flag and current:
-                            with _lock:
-                                _scan_data.update(current)
-                            current = {}
-
-                    except StopIteration:
-                        break
-                    except Exception:
-                        continue  # skip bad packet
-
-            except Exception as e:
-                print(f"Scan start failed ({e}) — retrying...")
-                time.sleep(0.5)
-                continue
+            if scan.start_flag and current:
+                with _lock:
+                    _scan_data.update(current)
+                current = {}
 
     except Exception as e:
-        print(f"LiDAR connection error: {e}")
+        print(f"LiDAR scan error: {e}")
     finally:
         try:
             lidar.set_motor_pwm(0)
@@ -81,7 +65,7 @@ def start_lidar():
     _running = True
     _thread  = threading.Thread(target=_scan_worker, daemon=True)
     _thread.start()
-    time.sleep(2)   # wait for first full scan
+    time.sleep(2)
 
 
 def stop_lidar():
@@ -92,27 +76,24 @@ def stop_lidar():
 
 
 def _sector_min(start_angle, end_angle):
-    """Return the minimum distance (cm) within a degree sector."""
     with _lock:
         data = dict(_scan_data)
 
     if start_angle <= end_angle:
         values = [v for k, v in data.items() if start_angle <= k <= end_angle]
     else:
-        # Wraps around 0° (e.g. 345° → 15°)
         values = [v for k, v in data.items() if k >= start_angle or k <= end_angle]
 
-    return min(values) if values else MAX_RANGE_CM
+    return min(values) if values else None
 
 
-def sense():
-    """
-    Return the nearest obstacle distance (cm) in three sectors:
-        front       — directly ahead
-        front_left  — ahead and to the left
-        front_right — ahead and to the right
-    """
-    front       = _sector_min(*FRONT_SECTOR)
-    front_left  = _sector_min(*FRONT_LEFT_SECTOR)
-    front_right = _sector_min(*FRONT_RIGHT_SECTOR)
-    return front, front_left, front_right
+def sense(last0=200, last1=200):
+    left  = _sector_min(*LEFT_SECTOR)
+    right = _sector_min(*RIGHT_SECTOR)
+
+    s0 = left  if left  is not None else last0
+    s1 = right if right is not None else last1
+
+    merki = 1 if (s0 < TOO_CLOSE_CM or s1 < TOO_CLOSE_CM) else 0
+
+    return s0, s1, merki

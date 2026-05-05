@@ -3,42 +3,50 @@ from hreyfing import *
 
 import time
 
-# Distance thresholds (cm)
-CLEAR     = 80   # far enough to go straight
-TURNING   = 30   # close enough to start turning
-TOO_CLOSE = 15   # last resort — back up
-
-HRADI = 200
-
 
 def autopilot():
+    s0, s1 = 200, 200
+    hradi  = 200
+
     start_lidar()
     print("LiDAR ready — autopilot running.")
 
     try:
         while True:
-            front, front_left, front_right = sense()
+            try:
+                s0, s1, merki = sense(s0, s1)
+            except Exception:
+                time.sleep(0.1)
+                continue
 
-            if front > CLEAR and front_left > CLEAR and front_right > CLEAR:
-                # All clear ahead — go straight
-                fara_afram(HRADI)
+            if s0 > 100 and s1 > 100:
+                # Both sides clear — go straight
+                fara_afram(hradi)
 
-            elif front_left > front_right:
-                # More room on the left — turn left
-                radius = int(HRADI * (front_left / 100))
-                radius = max(0, min(radius, HRADI))
-                beygja("Vinstri", HRADI, radius)
+            elif s0 > 100 and s1 <= 100:
+                # Right side blocked — turn left
+                radius = int(hradi * (s1 - 20) / 80)
+                beygja("Vinstri", hradi, max(0, radius))
 
-            elif front_right >= front_left:
-                # More room on the right — turn right
-                radius = int(HRADI * (front_right / 100))
-                radius = max(0, min(radius, HRADI))
-                beygja("Hægri", HRADI, radius)
+            elif s1 > 100 and s0 <= 100:
+                # Left side blocked — turn right
+                radius = int(hradi * (s0 - 20) / 80)
+                beygja("Hægri", hradi, max(0, radius))
 
-            if front < TOO_CLOSE and front_left < TOO_CLOSE and front_right < TOO_CLOSE:
-                # Completely boxed in — back up as last resort
-                fara_aftur(HRADI)
+            elif s0 > 20:
+                # Left has some room — sharp turn left
+                beygja("Vinstri", hradi, -hradi)
+
+            elif s1 > 20:
+                # Right has some room — sharp turn right
+                beygja("Hægri", hradi, -hradi)
+
+            else:
+                # Truly stuck — back up as last resort
+                fara_aftur(hradi)
                 time.sleep(0.5)
+                beygja("Hægri", hradi, -hradi)
+                time.sleep(0.4)
 
             time.sleep(0.1)
 
