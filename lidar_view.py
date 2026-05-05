@@ -40,7 +40,7 @@ def scan_worker():
             angle = scan.angle
             distance = scan.distance
 
-            if distance > 0:
+            if distance > 150:
                 angles.append(math.radians(angle))
                 distances.append(distance)
 
