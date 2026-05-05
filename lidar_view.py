@@ -28,7 +28,19 @@ def scan_worker():
         lidar.reset()
         time.sleep(5)  # Wait for reset and motor spin up
 
-        scan_generator = lidar.start_scan()
+        # Retry start_scan — first attempt clears leftover reset data
+        scan_generator = None
+        for attempt in range(5):
+            try:
+                scan_generator = lidar.start_scan()
+                print(f"Scan started on attempt {attempt + 1}")
+                break
+            except Exception as e:
+                print(f"Attempt {attempt + 1} failed: {e}, retrying...")
+                time.sleep(1)
+
+        if scan_generator is None:
+            raise Exception("Could not start scan after 5 attempts")
 
         angles = []
         distances = []
