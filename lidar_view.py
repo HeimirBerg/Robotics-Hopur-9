@@ -5,6 +5,7 @@ import matplotlib.animation as animation
 from rplidar import RPLidar
 import threading
 
+
 LIDAR_PORT = '/dev/ttyUSB1'
 BAUDRATE = 1000000
 MIN_QUALITY = 10
