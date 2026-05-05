@@ -10,7 +10,7 @@ from pyrplidar import PyRPlidar
 LIDAR_PORT = "/dev/ttyUSB0"
 BAUDRATE = 1000000
 MOTOR_PWM = 660       # Motor speed (0-1023), 660 is default
-MAX_DISTANCE = 8000   # Max display distance in mm (8 metres)
+MAX_DISTANCE = 1000   # Max display distance in mm (8 metres)
 
 # --- Shared scan data ---
 scan_data = {"angles": [], "distances": []}
