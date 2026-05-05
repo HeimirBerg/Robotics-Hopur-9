@@ -10,7 +10,7 @@ from pyrplidar import PyRPlidar
 LIDAR_PORT = "/dev/ttyUSB0"
 BAUDRATE = 1000000
 MOTOR_PWM = 660       # Motor speed (0-1023), 660 is default
-MAX_DISTANCE = 1000   # Max display distance in mm (8 metres)
+MAX_DISTANCE = 8000   # Max display distance in mm (8 metres)
 
 # --- Shared scan data ---
 scan_data = {"angles": [], "distances": []}
@@ -25,8 +25,8 @@ def scan_worker():
     try:
         lidar.connect(port=LIDAR_PORT, baudrate=BAUDRATE, timeout=3)
         print("Connected to LiDAR...")
-        lidar.set_motor_pwm(MOTOR_PWM)
-        time.sleep(1)  # Let the motor spin up
+        lidar.reset()
+        time.sleep(5)  # Wait for reset and motor spin up
 
         scan_generator = lidar.start_scan()
 
@@ -40,7 +40,7 @@ def scan_worker():
             angle = scan.angle
             distance = scan.distance
 
-            if distance > 150:
+            if distance > 0:
                 angles.append(math.radians(angle))
                 distances.append(distance)
 
@@ -56,7 +56,6 @@ def scan_worker():
         print(f"LiDAR error: {e}")
     finally:
         try:
-            lidar.set_motor_pwm(0)
             lidar.stop()
             lidar.disconnect()
             print("LiDAR disconnected.")
