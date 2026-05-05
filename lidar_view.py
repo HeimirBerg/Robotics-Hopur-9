@@ -60,6 +60,7 @@ def update(frame):
 # --- Start LiDAR ---
 print("Connecting to LiDAR...")
 lidar = RPLidar(LIDAR_PORT, baudrate=BAUDRATE)
+time.sleep(3)
 t = threading.Thread(target=scan_worker, args=(lidar,), daemon=True)
 t.start()
 print("Running — close the window to stop.")
