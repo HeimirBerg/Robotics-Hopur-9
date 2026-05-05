@@ -31,30 +31,37 @@ def _scan_worker():
         lidar.set_motor_pwm(MOTOR_PWM)
         time.sleep(1)
 
-        scan_gen = lidar.start_scan()
-        gen      = scan_gen()
-        current  = {}
-        print("Scan running.")
-
         while _running:
             try:
-                scan = next(gen)
+                print("Starting scan...")
+                scan_gen = lidar.start_scan()
+                gen      = scan_gen()
+                current  = {}
+                print("Scan running.")
 
-                angle_deg = round(scan.angle) % 360
-                dist_cm   = scan.distance / 10.0   # mm → cm
+                while _running:
+                    try:
+                        scan = next(gen)
 
-                if 0 < dist_cm <= MAX_RANGE_CM:
-                    current[angle_deg] = dist_cm
+                        angle_deg = round(scan.angle) % 360
+                        dist_cm   = scan.distance / 10.0
 
-                if scan.start_flag and current:
-                    with _lock:
-                        _scan_data.update(current)
-                    current = {}
+                        if 0 < dist_cm <= MAX_RANGE_CM:
+                            current[angle_deg] = dist_cm
 
-            except StopIteration:
-                break
-            except Exception:
-                # Bad packet — skip it and keep going
+                        if scan.start_flag and current:
+                            with _lock:
+                                _scan_data.update(current)
+                            current = {}
+
+                    except StopIteration:
+                        break
+                    except Exception:
+                        continue  # skip bad packet
+
+            except Exception as e:
+                print(f"Scan start failed ({e}) — retrying...")
+                time.sleep(0.5)
                 continue
 
     except Exception as e:
