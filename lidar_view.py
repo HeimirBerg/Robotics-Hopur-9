@@ -28,18 +28,21 @@ def scan_worker():
         lidar.reset()
         time.sleep(5)  # Wait for reset and motor spin up
 
-        # Retry start_scan — each attempt drains leftover reset bytes from buffer
-        scan_generator = None
-        for attempt in range(100):
-            try:
-                scan_generator = lidar.start_scan()
-                print(f"Scan started on attempt {attempt + 1}")
+        # Flush the serial buffer before starting scan
+        serial_port = None
+        for attr in ['_serial', 'serial', '_serial_port', 'serial_port', '_port', 'port']:
+            if hasattr(lidar.lidar_serial, attr):
+                serial_port = getattr(lidar.lidar_serial, attr)
+                print(f"Found serial port at attribute: {attr}")
                 break
-            except Exception:
-                time.sleep(0.05)
+        if serial_port:
+            serial_port.reset_input_buffer()
+            print("Buffer flushed.")
+        else:
+            print(f"Could not find serial port. Attributes: {dir(lidar.lidar_serial)}")
 
-        if scan_generator is None:
-            raise Exception("Could not start scan after 100 attempts")
+        scan_generator = lidar.start_scan()
+        print("Scan started!")
 
         angles = []
         distances = []
