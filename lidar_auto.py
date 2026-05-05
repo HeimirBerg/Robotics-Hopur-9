@@ -3,53 +3,42 @@ from hreyfing import *
 
 import time
 
+# Distance thresholds (cm)
+CLEAR     = 80   # far enough to go straight
+TURNING   = 30   # close enough to start turning
+TOO_CLOSE = 15   # last resort — back up
+
+HRADI = 200
+
 
 def autopilot():
-    s0, s1 = 200, 200
-    hradi  = 200
-
     start_lidar()
     print("LiDAR ready — autopilot running.")
 
     try:
         while True:
-            try:
-                s0, s1, merki = sense(s0, s1)
-            except Exception:
-                time.sleep(0.1)
-                continue
+            front, front_left, front_right = sense()
 
-            if merki == 1:
-                # Too close — back up to create space, then turn away
-                fara_aftur(hradi)
+            if front > CLEAR and front_left > CLEAR and front_right > CLEAR:
+                # All clear ahead — go straight
+                fara_afram(HRADI)
+
+            elif front_left > front_right:
+                # More room on the left — turn left
+                radius = int(HRADI * (front_left / 100))
+                radius = max(0, min(radius, HRADI))
+                beygja("Vinstri", HRADI, radius)
+
+            elif front_right >= front_left:
+                # More room on the right — turn right
+                radius = int(HRADI * (front_right / 100))
+                radius = max(0, min(radius, HRADI))
+                beygja("Hægri", HRADI, radius)
+
+            if front < TOO_CLOSE and front_left < TOO_CLOSE and front_right < TOO_CLOSE:
+                # Completely boxed in — back up as last resort
+                fara_aftur(HRADI)
                 time.sleep(0.5)
-                # Turn toward whichever side has more room
-                if s0 >= s1:
-                    beygja("Vinstri", hradi, -hradi)
-                else:
-                    beygja("Hægri", hradi, -hradi)
-                time.sleep(0.4)
-
-            elif s0 > 100 and s1 > 100:
-                # Both sides clear — go straight
-                fara_afram(hradi)
-
-            elif s0 > 100 and s1 <= 100:
-                # Right side blocked — turn left
-                radius = int(hradi * (s1 - 20) / 80)
-                beygja("Vinstri", hradi, max(0, radius))
-
-            elif s1 > 100 and s0 <= 100:
-                # Left side blocked — turn right
-                radius = int(hradi * (s0 - 20) / 80)
-                beygja("Hægri", hradi, max(0, radius))
-
-            else:
-                # Both sides blocked — back up and turn right
-                fara_aftur(hradi)
-                time.sleep(0.5)
-                beygja("Hægri", hradi, -hradi)
-                time.sleep(0.4)
 
             time.sleep(0.1)
 

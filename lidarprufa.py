@@ -1,46 +1,103 @@
-from lidarprufa import sense, start_lidar, stop_lidar
-from hreyfing import *
-
+import threading
 import time
+from pyrplidar import PyRPlidar
 
-# Distance thresholds (cm)
-CLEAR     = 80   # far enough to go straight
-TURNING   = 30   # close enough to start turning
-TOO_CLOSE = 15   # last resort — back up
+# --- LiDAR configuration ---
+LIDAR_PORT = "/dev/ttyUSB0"
+BAUDRATE   = 1000000
+MOTOR_PWM  = 660
 
-HRADI = 200
+# --- Sectors (degrees) — adjust if LiDAR is mounted differently ---
+# 0° is assumed to be the front of the robot
+FRONT_SECTOR      = (345, 15)    # directly ahead  ±15°
+FRONT_LEFT_SECTOR = (315, 345)   # front-left
+FRONT_RIGHT_SECTOR = (15, 45)    # front-right
+
+MAX_RANGE_CM = 300   # ignore readings beyond this
+
+# --- Shared state ---
+_scan_data = {}          # angle(int) -> distance(cm)
+_lock      = threading.Lock()
+_running   = False
+_thread    = None
 
 
-def autopilot():
-    start_lidar()
-    print("LiDAR ready — autopilot running.")
-
+def _scan_worker():
+    global _running
+    lidar = PyRPlidar()
     try:
-        while True:
-            front, front_left, front_right = sense()
+        lidar.connect(port=LIDAR_PORT, baudrate=BAUDRATE, timeout=3)
+        print("LiDAR connected.")
+        lidar.set_motor_pwm(MOTOR_PWM)
+        time.sleep(1)
 
-            if front > CLEAR and front_left > CLEAR and front_right > CLEAR:
-                # All clear ahead — go straight
-                fara_afram(HRADI)
+        scan_gen = lidar.start_scan()
+        current  = {}
 
-            elif front_left > front_right:
-                # More room on the left — turn left
-                radius = int(HRADI * (front_left / 100))
-                radius = max(0, min(radius, HRADI))
-                beygja("Vinstri", HRADI, radius)
+        for scan in scan_gen():
+            if not _running:
+                break
 
-            elif front_right >= front_left:
-                # More room on the right — turn right
-                radius = int(HRADI * (front_right / 100))
-                radius = max(0, min(radius, HRADI))
-                beygja("Hægri", HRADI, radius)
+            angle_deg = round(scan.angle) % 360
+            dist_cm   = scan.distance / 10.0   # mm → cm
 
-            if front < TOO_CLOSE and front_left < TOO_CLOSE and front_right < TOO_CLOSE:
-                # Completely boxed in — back up as last resort
-                fara_aftur(HRADI)
-                time.sleep(0.5)
+            if 0 < dist_cm <= MAX_RANGE_CM:
+                current[angle_deg] = dist_cm
 
-            time.sleep(0.1)
+            if scan.start_flag and current:
+                with _lock:
+                    _scan_data.update(current)
+                current = {}
 
+    except Exception as e:
+        print(f"LiDAR scan error: {e}")
     finally:
-        stop_lidar()
+        try:
+            lidar.set_motor_pwm(0)
+            lidar.stop()
+            lidar.disconnect()
+            print("LiDAR disconnected.")
+        except Exception:
+            pass
+
+
+def start_lidar():
+    global _running, _thread
+    _running = True
+    _thread  = threading.Thread(target=_scan_worker, daemon=True)
+    _thread.start()
+    time.sleep(2)   # wait for first full scan
+
+
+def stop_lidar():
+    global _running
+    _running = False
+    if _thread:
+        _thread.join(timeout=3)
+
+
+def _sector_min(start_angle, end_angle):
+    """Return the minimum distance (cm) within a degree sector."""
+    with _lock:
+        data = dict(_scan_data)
+
+    if start_angle <= end_angle:
+        values = [v for k, v in data.items() if start_angle <= k <= end_angle]
+    else:
+        # Wraps around 0° (e.g. 345° → 15°)
+        values = [v for k, v in data.items() if k >= start_angle or k <= end_angle]
+
+    return min(values) if values else MAX_RANGE_CM
+
+
+def sense():
+    """
+    Return the nearest obstacle distance (cm) in three sectors:
+        front       — directly ahead
+        front_left  — ahead and to the left
+        front_right — ahead and to the right
+    """
+    front       = _sector_min(*FRONT_SECTOR)
+    front_left  = _sector_min(*FRONT_LEFT_SECTOR)
+    front_right = _sector_min(*FRONT_RIGHT_SECTOR)
+    return front, front_left, front_right
