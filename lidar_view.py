@@ -6,7 +6,7 @@ from rplidar import RPLidar
 import threading
 
 
-LIDAR_PORT = '/dev/ttyUSB1'
+LIDAR_PORT = '/dev/ttyUSB0'
 BAUDRATE = 1000000
 MIN_QUALITY = 10
 
