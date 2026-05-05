@@ -33,8 +33,12 @@ def _scan_worker():
 
         while _running:
             try:
+                print("Starting scan...")
+                lidar.stop()
+                time.sleep(0.1)
                 scan_gen = lidar.start_scan()
                 current  = {}
+                print("Scan running.")
 
                 for scan in scan_gen():
                     if not _running:
@@ -51,9 +55,9 @@ def _scan_worker():
                             _scan_data.update(current)
                         current = {}
 
-            except Exception:
-                # Bad packet from generator — restart the scan and keep going
-                time.sleep(0.1)
+            except Exception as e:
+                print(f"Scan packet error: {e} — restarting scan...")
+                time.sleep(0.2)
                 continue
 
     except Exception as e:
