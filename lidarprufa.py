@@ -38,19 +38,24 @@ def _scan_worker():
             if not _running:
                 break
 
-            angle_deg = round(scan.angle) % 360
-            dist_cm   = scan.distance / 10.0   # mm → cm
+            try:
+                angle_deg = round(scan.angle) % 360
+                dist_cm   = scan.distance / 10.0   # mm → cm
 
-            if 0 < dist_cm <= MAX_RANGE_CM:
-                current[angle_deg] = dist_cm
+                if 0 < dist_cm <= MAX_RANGE_CM:
+                    current[angle_deg] = dist_cm
 
-            if scan.start_flag and current:
-                with _lock:
-                    _scan_data.update(current)
-                current = {}
+                if scan.start_flag and current:
+                    with _lock:
+                        _scan_data.update(current)
+                    current = {}
+
+            except Exception:
+                # Skip bad packets and keep scanning
+                continue
 
     except Exception as e:
-        print(f"LiDAR scan error: {e}")
+        print(f"LiDAR connection error: {e}")
     finally:
         try:
             lidar.set_motor_pwm(0)
