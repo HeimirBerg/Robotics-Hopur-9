@@ -9,11 +9,12 @@ def scan():
     time.sleep(1)
 
     scan_gen = lidar.start_scan()
-    angle = scan.angle
-    distance = scan.distance
+    
 
     try:
         for scan in scan_gen():
+            angle = scan.angle
+            distance = scan.distance
             return angle, distance
     except KeyboardInterrupt:
         lidar.lidar_serial.set_dtr(True)
