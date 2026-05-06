@@ -4,7 +4,7 @@ try:
     lidar = PyRPlidar()
     lidar.connect(port="/dev/ttyUSB0", baudrate=1000000, timeout=3)
     lidar.set_motor_pwm(660)  # start the motor
-    time.sleep(1)
+    time.sleep(2)
     scan_gen = lidar.start_scan()
 
     for scan in scan_gen():
