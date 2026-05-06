@@ -9,4 +9,5 @@ test/
 ## Backup af kóða
 backup/
 
+# Gamall pull file
 pull.py

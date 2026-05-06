@@ -1,4 +1,4 @@
-from manual import *
+from manualdrive import manual
 from lidar_auto import *
 
 try:

@@ -103,18 +103,21 @@ def reikna_beygju(servo_angle, distance, hradi, servoenable=True):
     
 
 
+
 # -------------------- ------------------ --------------------- #
 # -------------------- Gunnar, Prufu kóði --------------------- #
 # -------------------- ------------------ --------------------- #
 
-# Setup
-# I2C_ADDRESS = a.MCU        # Slave address
-# DATA_REGISTER = a.MCU_DATA # Pi address to write data
-# bus = s.SMBus(1)           # The I2C bus on Pi 4
-DATA_REGISTER = 0x00
+
+DATA_REGISTER = 0x00  # Pi address to write data to
 
 
 def send_speeds(m1: int, m2: int) -> str:
+    """
+    Sends velocity values to each motor. Corrects sign on inverted Motor 2
+    
+    `m1` and `m2` range -255 to 255.
+    """
     
     try:
         # Check if inputs are integers
@@ -145,12 +148,15 @@ def send_speeds(m1: int, m2: int) -> str:
     
 
 def stop() -> str:
+    """Stops motors"""
     send_speeds(0,0)
     return "Motors stopped"
 
 
 def drive(speed: int, direction: int, turn_stage: int = 0) -> None:
     """
+    Combined driving functions. Includes speed assignment to each motor, direction and turning logic.
+
     :speed: Range `15 - 255`.
     :direction: `1` = Forward; `2` = Reverse; `3` = Turn left; `4` = Turn right.
     :turn_stage: `-1` = On Spot; `0` = Full; `1` = Stage 1; `2` = Stage 2; `3` = Shallow.
@@ -206,7 +212,7 @@ def drive(speed: int, direction: int, turn_stage: int = 0) -> None:
             return
         
         # Send the speed to motors
-        print(send_speeds(m1,m2))
+        send_speeds(m1,m2)
         
     except ValueError:
         print(stop())
