@@ -5,7 +5,6 @@ from pyrplidar import PyRPlidar
 # --- LiDAR configuration ---
 LIDAR_PORT = "/dev/ttyUSB0"
 BAUDRATE   = 1000000
-MOTOR_PWM  = 660
 
 # --- Sectors (degrees) — adjust if LiDAR is mounted differently ---
 LEFT_SECTOR  = (315, 360)   # front-left
@@ -27,11 +26,23 @@ def _scan_worker():
     try:
         lidar.connect(port=LIDAR_PORT, baudrate=BAUDRATE, timeout=3)
         print("LiDAR connected.")
-        lidar.set_motor_pwm(MOTOR_PWM)
-        time.sleep(1)
+        lidar.reset()
+        time.sleep(5)  # Wait for reset and motor spin up
 
-        scan_gen = lidar.start_scan()
-        current  = {}
+        # Retry start_scan to drain any leftover reset bytes from buffer
+        scan_gen = None
+        for attempt in range(100):
+            try:
+                scan_gen = lidar.start_scan()
+                print(f"Scan started on attempt {attempt + 1}")
+                break
+            except Exception:
+                time.sleep(0.05)
+
+        if scan_gen is None:
+            raise Exception("Could not start scan after 100 attempts")
+
+        current = {}
 
         for scan in scan_gen():
             if not _running:
@@ -52,7 +63,6 @@ def _scan_worker():
         print(f"LiDAR scan error: {e}")
     finally:
         try:
-            lidar.set_motor_pwm(0)
             lidar.stop()
             lidar.disconnect()
             print("LiDAR disconnected.")
@@ -65,7 +75,7 @@ def start_lidar():
     _running = True
     _thread  = threading.Thread(target=_scan_worker, daemon=True)
     _thread.start()
-    time.sleep(2)
+    time.sleep(8)   # Wait for reset (5s) + first scan to arrive
 
 
 def stop_lidar():
