@@ -27,7 +27,7 @@ def find_input_devices() -> None:
 
 def select_input_device(device_name: str) -> str | None:
     """
-    Leitar að möppu slóðinni fyrir völdu inntakstæki (lyklaborði/fjarstýringu).
+    Leitar að möppu slóðinni fyrir valið tæki (lyklaborði/fjarstýringu).
 
     :input_name: Hluti af nafni tækis, t.d. Dell eða Keyboard (Nöfn sjást með fallinu `find_input_devices`).
     :return: Slóð á völdu inntakstæki. Ef tækið finnst ekki er skilað `None`.
@@ -47,100 +47,108 @@ def select_input_device(device_name: str) -> str | None:
     except ValueError:
         print("Ógilt nafn slegið inn. Þarf að vera strengur.\n")
         return None
+
+
+def calculate_speeds(reference_time: float, init_speed: int, init_turn: int) -> tuple[int, int]:
+    """
+    Reiknar aukinn hraða og beygju hraða eftir ákveðna seinkun.
     
+    :reference_time: Viðmiðunar tími í reikningum.
+    :init_speed: Upphafs hraði.
+    :init_turn: Upphafs beygju stig.
+    :return: Útreiknaður hraði og beygju skref.
+    """
 
-def boozter(start_time: float, event, speed: int, direction: int, turn_stage: int = 0) -> None:
-    """Merge with keybord control"""
-    # Setup
-    STRAIGHT: list[int] = [1, 2]
-    TURN: list[int] = [3, 4]
-    MAX_SPEED: int = 255
-    SPEED_BOOZT: int = 50
-    wait_time_1: int = 3
-    wait_time_2: int = 8
-    
-    # Eftir fyrsta biðtíma
-    if (time.time() - start_time) >= wait_time_1:
+    MIN_SPEED: int = 15   # Minnsti hraði sem er hægt að senda á mótora
+    MAX_SPEED: int = 255  # Mesti hraði sem er hægt að senda á mótora
+    MIN_TURN: int = -1    # Minnsta beygja sem er hægt að taka
+    MAX_TURN: int = 3     # Mesta beygja sem er hægt að taka
+    SPEED_BOOST: int = 50 # Hraði sem er bætt við þegar takka hefur verið haldi í biðtíma
+    WAIT_TIME_1: int = 3  # [s]
+    WAIT_TIME_2: int = 10 # [s]
 
-        if direction in STRAIGHT and ((speed + SPEED_BOOZT) <= MAX_SPEED):
-            speed += SPEED_BOOZT
-        elif direction in TURN and (turn_stage != -1):
-            turn_stage -= 1
+    # Hjálpar fall
+    def clamp(low: int, value: int, high: int) -> int:
+        """Klemmir gildi á milli `low` (MIN) og `high` (MAX)."""
+        return max(low, min(value, high))
 
-        m.drive(speed, direction, turn_stage)
+    # Tími liðinn frá því fyrsta takka var ýtt niður.
+    elapsed_time: float = time.time() - reference_time
 
-        # Eftir annan biðtíma
-        if (time.time() - start_time) >= wait_time_2:
+    if elapsed_time >= WAIT_TIME_2:
+        speed = clamp(MIN_SPEED, (init_speed + (SPEED_BOOST * 2)), MAX_SPEED)
+        turn = clamp(MIN_TURN, (init_turn + 2), MAX_TURN)
 
-            if direction in STRAIGHT and ((speed + SPEED_BOOZT) <= MAX_SPEED):
-                speed += SPEED_BOOZT
-            elif direction in TURN and (turn_stage != -1):
-                turn_stage -= 1
+    elif elapsed_time >= WAIT_TIME_1:
+        speed = clamp(MIN_SPEED, (init_speed + SPEED_BOOST), MAX_SPEED)
+        turn = clamp(MIN_TURN, (init_turn + 1), MAX_TURN)
 
-            m.drive(speed, direction, turn_stage)
+    else:
+        speed = init_speed
+        turn = init_turn
 
-        elif event.keystate == event.key_up:
-            m.stop()
-            return
-        
-    elif event.keystate == event.key_up:
-        m.stop()
-        return
-    
+    return speed, turn
+
 
 def keyboard_control(device_path: str) -> None:
     """Stýri- og keyrsluvirkni með lyklaborði."""
     
-    device = evdev.InputDevice(device_path)
-    speed: int = 100
-    turn_stage: int = 1
+    device = evdev.InputDevice(device_path) # Slóðin á lyklaborðið
 
-    time_w: float = 0.0
-    time_s: float = 0.0
-    time_a: float = 0.0
-    time_d: float = 0.0
+    keys_held: set[str] = set() # Mengi með tökkum sem er haldið inni
+    init_speed: int = 100       # Upphafs hraði (15 til 255)
+    init_turn_stage: int = 0    # Upphafs beygju stig (-1 til 3)
+    start_time: float = 0.0     # Tími tekinn þegar fyrsta takka er ýtt niður [s]
+
+    print("=== Tilbúinn í keyrslu með lyklaborði ===")
 
     try:
         for event in device.read_loop():
             if event.type == evdev.ecodes.EV_KEY:
                 key = evdev.categorize(event)
 
-                if (key.keystate == key.key_down) or (key.keystate == key.key_hold):
-                    if (key.keycode == "KEY_W") or (key.keycode == "KEY_UP"):
-                        if key.keystate == key.key_down:
-                            time_w = time.time()
-                        m.drive(speed, 1)
-                        boozter(time_w, key, speed, 1)
+                # Þegar takka er ýtt niður
+                if key.keystate in (key.key_down, key.key_hold):
 
-                    elif (key.keycode == "KEY_S") or (key.keycode == "KEY_DOWN"):
-                        if key.keystate == key.key_down:     
-                            time_s = time.time()
-                        m.drive(speed, 2)
-                        boozter(time_s, key, speed, 2)
+                    # Tek tímann þegar fyrsta takka er ýtt niður
+                    if (key.keystate == key.key_down) and not keys_held:
+                        start_time = time.time()
+                    
+                    # Bæti takkanum í mengið
+                    keys_held.add(key.keycode)
 
-                    elif (key.keycode == "KEY_A") or (key.keycode == "KEY_LEFT"):
-                        if key.keystate == key.key_down:
-                            time_a = time.time()
+                    # Reikna hraðanna eftir seinkun
+                    speed, turn_stage = calculate_speeds(start_time, init_speed, init_turn_stage)
+
+                    # Framkvæmi virkni eftir hvaða takka er ýtt niður, hef beygjur efst svo þær taki forgang.
+                    if key.keycode in ("KEY_LEFT", "KEY_A"):
                         m.drive(speed, 3, turn_stage)
-                        boozter(time_a, key, speed, 3, turn_stage)
 
-                    elif (key.keycode == "KEY_D") or (key.keycode == "KEY_RIGHT"):
-                        if key.keystate == key.key_down: 
-                            time_d = time.time()
+                    elif key.keycode in ("KEY_RIGHT", "KEY_D"):
                         m.drive(speed, 4, turn_stage)
-                        boozter(time_d, key, speed, 4, turn_stage)
+                    
+                    elif key.keycode in ("KEY_UP", "KEY_W"):
+                        m.drive(speed, 1)
 
-                    elif (key.keycode == "KEY_SPACE"):
+                    elif key.keycode in ("KEY_DOWN", "KEY_S"):
+                        m.drive(speed, 2)
+
+                    elif key.keycode == "KEY_SPACE":
                         m.stop()
-                        print("Hætti í keyrslu...Bless.")
+                        print(f"=== Hætti í keyrslu ===\n{"Bless, bless...":^23}")
                         return
 
+                # Þegar takka er sleppt
                 elif key.keystate == key.key_up:
-                    m.stop()
+                    keys_held.discard(key.keycode)
+                    if not keys_held:
+                        start_time = 0.0
+                        m.stop()  # Stoppar bara þegar búið er að sleppa öllum tökkum
 
+    # Önnur leið til að hætta í keyrslu og forriti
     except KeyboardInterrupt:
         m.stop()
-        print("\nMAY-DAY, MAY-DAY, MAY-DAY.\nAllt í rugli.\n")
+        print(f"=== Hætti í keyrslu ===\n{"Úps...":^23}")
         return
 
 
@@ -154,13 +162,15 @@ def manual() -> None:
 
     input_name: str = ""
     input_path: str | None = None 
-    find_input_devices()          # Prentar tiltæk tæki.
+    
+    # Prenta tiltæk tæki.
+    find_input_devices()
 
     while input_path is None:
         input_name = input("Sláðu inn nafn lyklaborðs eða fjarstýringar: ")
         input_path = select_input_device(input_name)
 
-    if ("ps" or "cont") in input_name.lower():
+    if "ps" in input_name.lower():  # Á kannski eftir að breytast
         ps5_control(input_path)
     else:
         keyboard_control(input_path)
