@@ -4,8 +4,8 @@ import time
 
 
 def autopilot():
-    s0, s1 = 200, 200
-    hradi = 100
+    hradi = 200
+    TOO_CLOSE = 30   # cm
 
     start_lidar()
     print("LiDAR ready — autopilot running.")
@@ -13,27 +13,26 @@ def autopilot():
     try:
         while True:
             try:
-                s0, s1, merki = sense(s0, s1)
+                s0, s1, _ = sense()
             except Exception:
                 time.sleep(0.1)
                 continue
 
-            if merki == 1:
-                beygja("Hægri", hradi, -hradi)
-
-            elif s0 > 100 and s1 > 100:
+            if s0 > TOO_CLOSE and s1 > TOO_CLOSE:
                 fara_afram(hradi)
 
-            elif s0 > 100 and s1 <= 100:
-                radius = int(hradi * (s1 - 20) / 80)
-                beygja("Vinstri", hradi, max(0, radius))
+            elif s0 > TOO_CLOSE and s1 <= TOO_CLOSE:
+                # right blocked, turn left
+                beygja("Vinstri", hradi, -hradi)
 
-            elif s1 > 100 and s0 <= 100:
-                radius = int(hradi * (s0 - 20) / 80)
-                beygja("Hægri", hradi, max(0, radius))
+            elif s1 > TOO_CLOSE and s0 <= TOO_CLOSE:
+                # left blocked, turn right
+                beygja("Hægri", hradi, -hradi)
 
             else:
-                beygja("Hægri", hradi, -hradi)
+                # both blocked, back up
+                fara_aftur(hradi)
+                time.sleep(0.5)
 
             time.sleep(0.1)
 
