@@ -6,7 +6,7 @@ import time
 
 def autopilot():
     s0, s1 = 200, 200
-    hradi  = 100
+    hradi  = 200
 
     start_lidar()
     print("LiDAR ready — autopilot running.")
