@@ -1,22 +1,33 @@
+import cv2
 from picamera2 import Picamera2
-import time
 
-# 1. Initialize the camera 'brain'
+# 1. Initialize Picamera2 (The "Brain")
 picam2 = Picamera2()
 
-# 2. Setup the camera (this handles the Raw-to-JPEG conversion automatically)
-# We use a modest resolution to keep things fast
-config = picam2.create_preview_configuration(main={"size": (1280, 720)})
+# 2. Configure the stream
+# This tells the ISP to turn the Raw Bayer into a standard image for us
+config = picam2.create_preview_configuration(main={"size": (640, 480)})
 picam2.configure(config)
 
 # 3. Start the camera
 picam2.start()
 
-# 4. Capture a photo
-print("Capturing photo in 2 seconds...")
-time.sleep(2)
-picam2.capture_file("victory.jpg")
+print("Camera Live! Press 'q' to quit.")
 
-# 5. Cleanup
-picam2.stop()
-print("Success! Check your folder for victory.jpg")
+try:
+    while True:
+        # Capture a frame into a format OpenCV understands (NumPy array)
+        frame = picam2.capture_array()
+
+        # Display the frame in a window
+        cv2.imshow('Robotics-Hopur-9 Live Feed', frame)
+
+        # Stop if the user presses 'q'
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+except KeyboardInterrupt:
+    print("\nInterrupted by user.")
+finally:
+    # Always stop the hardware properly
+    picam2.stop()
+    cv2.destroyAllWindows()
