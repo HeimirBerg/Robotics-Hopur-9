@@ -5,6 +5,7 @@ try:
     lidar.connect(port="/dev/ttyUSB0", baudrate=1000000, timeout=3)
     lidar.set_motor_pwm(660)  # start the motor
     time.sleep(2)
+    print("jo")
     scan_gen = lidar.start_scan()
 
     for scan in scan_gen():
