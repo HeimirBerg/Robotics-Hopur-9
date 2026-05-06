@@ -1,27 +1,33 @@
+import cv2
 from picamera2 import Picamera2
-import time
 
-# 1. Initialize the camera
+# 1. Initialize Picamera2 (The "Brain")
 picam2 = Picamera2()
 
-# 2. Configure for a standard preview (640x480 is fast and clear)
+# 2. Configure the stream
+# This tells the ISP to turn the Raw Bayer into a standard image for us
 config = picam2.create_preview_configuration(main={"size": (640, 480)})
 picam2.configure(config)
 
-# 3. Start the Window and the Camera
-# We use 'qt' for standard desktop environments
-picam2.start_preview(picam2.create_qt_preview())
+# 3. Start the camera
 picam2.start()
 
-print("Live feed started! Press Ctrl+C in this terminal to stop.")
+print("Camera Live! Press 'q' to quit.")
 
 try:
-    # Keep the script running so the window stays open
     while True:
-        time.sleep(1)
+        # Capture a frame into a format OpenCV understands (NumPy array)
+        frame = picam2.capture_array()
+
+        # Display the frame in a window
+        cv2.imshow('Robotics-Hopur-9 Live Feed', frame)
+
+        # Stop if the user presses 'q'
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 except KeyboardInterrupt:
-    print("\nClosing camera...")
+    print("\nInterrupted by user.")
 finally:
-    # Always cleanup to release the hardware for next time
-    picam2.stop_preview()
+    # Always stop the hardware properly
     picam2.stop()
+    cv2.destroyAllWindows()
