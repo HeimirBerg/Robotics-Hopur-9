@@ -1,33 +1,36 @@
 """
-Manual Driving module.
+--- Handvirk keyrsla / Manual Driving Module ---
 
-Selects input devices and assigns different control functions depending on selected input device.
+Finnur lyklaborð og fjastýringar tengdar við Pi.
+Gefur notenda valmöguleika á milli tækja og
+velur sjálfvirkt hvaða keyrslu fall á að nota.
 """
 
 import evdev
 import time
 
-import hreyfing as h
+import hreyfing as m
+# import movement as m
 
 
 def find_input_devices() -> None:
-    """Finds all input devices under the folder `/dev/input/` and prints them to the Terminal."""
+    """Finnur öll tæki í möppunni `/dev/input/` og prentar þau í Terminal."""
 
     devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
 
-    # Print table
-    print("\nFound devices:")
+    # Prenta töflu
+    print("\nFann tækin:")
     for device in devices:
         print(device.path, device.name, device.phys, sep=" || ")
-    print("--- END ---\n")
+    print("====== BÚINN ======\n")
 
 
 def select_input_device(device_name: str) -> str | None:
     """
-    Looks for the folder path for a requested input device.
+    Leitar að möppu slóðinni fyrir völdu inntakstæki (lyklaborði/fjarstýringu).
 
-    :input_name: Part of a input device's name, e.g. Dell or Keyboard. (Found with `find_input_devices` function).
-    :return: The folder path to the requesten input device. If no divice is found returns `None`.
+    :input_name: Hluti af nafni tækis, t.d. Dell eða Keyboard (Nöfn sjást með fallinu `find_input_devices`).
+    :return: Slóð á völdu inntakstæki. Ef tækið finnst ekki er skilað `None`.
     """
 
     try:
@@ -37,12 +40,12 @@ def select_input_device(device_name: str) -> str | None:
             if device_name.lower() in device.name.lower():
                 return device.path
         
-        # Prints only if for-loop finishes whithout returning
-        print("No device found.\n")
+        # Prentar aðeins ef for-lykkja klárast án þess að skila slóð
+        print("Fann ekki tækið sem þú leitaðir að.\n")
         return None
     
     except ValueError:
-        print("Invalid name entered. Enter a string.\n")
+        print("Ógilt nafn slegið inn. Þarf að vera strengur.\n")
         return None
     
 
@@ -64,7 +67,7 @@ def boozter(start_time: float, event, speed: int, direction: int, turn_stage: in
         elif direction in TURN and (turn_stage != -1):
             turn_stage -= 1
 
-        h.drive(speed, direction, turn_stage)
+        m.drive(speed, direction, turn_stage)
 
         # Eftir annan biðtíma
         if (time.time() - start_time) >= wait_time_2:
@@ -74,19 +77,19 @@ def boozter(start_time: float, event, speed: int, direction: int, turn_stage: in
             elif direction in TURN and (turn_stage != -1):
                 turn_stage -= 1
 
-            h.drive(speed, direction, turn_stage)
+            m.drive(speed, direction, turn_stage)
 
         elif event.keystate == event.key_up:
-            h.stop()
+            m.stop()
             return
         
     elif event.keystate == event.key_up:
-        h.stop()
+        m.stop()
         return
     
 
 def keyboard_control(device_path: str) -> None:
-    """Control logic using a keyboard."""
+    """Stýri- og keyrsluvirkni með lyklaborði."""
     
     device = evdev.InputDevice(device_path)
     speed: int = 100
@@ -106,58 +109,58 @@ def keyboard_control(device_path: str) -> None:
                     if (key.keycode == "KEY_W") or (key.keycode == "KEY_UP"):
                         if key.keystate == key.key_down:
                             time_w = time.time()
-                        h.drive(speed, 1)
+                        m.drive(speed, 1)
                         boozter(time_w, key, speed, 1)
 
                     elif (key.keycode == "KEY_S") or (key.keycode == "KEY_DOWN"):
                         if key.keystate == key.key_down:     
                             time_s = time.time()
-                        h.drive(speed, 2)
+                        m.drive(speed, 2)
                         boozter(time_s, key, speed, 2)
 
                     elif (key.keycode == "KEY_A") or (key.keycode == "KEY_LEFT"):
                         if key.keystate == key.key_down:
                             time_a = time.time()
-                        h.drive(speed, 3, turn_stage)
+                        m.drive(speed, 3, turn_stage)
                         boozter(time_a, key, speed, 3, turn_stage)
 
                     elif (key.keycode == "KEY_D") or (key.keycode == "KEY_RIGHT"):
                         if key.keystate == key.key_down: 
                             time_d = time.time()
-                        h.drive(speed, 4, turn_stage)
+                        m.drive(speed, 4, turn_stage)
                         boozter(time_d, key, speed, 4, turn_stage)
 
                     elif (key.keycode == "KEY_SPACE"):
-                        h.stop()
+                        m.stop()
                         print("Hætti í keyrslu...Bless.")
                         return
 
                 elif key.keystate == key.key_up:
-                    h.stop()
+                    m.stop()
 
     except KeyboardInterrupt:
-        h.stop()
+        m.stop()
         print("\nMAY-DAY, MAY-DAY, MAY-DAY.\nAllt í rugli.\n")
         return
 
 
 def ps5_control(device_path: str) -> None:
-    """Control logic using a PlayStation controller."""
+    """Stýri- og keyrsluvirkni með PlayStation fjarstýringu."""
     raise NotImplementedError
 
 
 def manual() -> None:
-    """Runs manual control functions"""
+    """Keyrir handvirka keyrslu, föll og virkni."""
 
     input_name: str = ""
     input_path: str | None = None 
-    find_input_devices()          # Print available devices
+    find_input_devices()          # Prentar tiltæk tæki.
 
     while input_path is None:
-        input_name = input("Sláðu inn nafn lyklaborðs eða fjarstýringu: ")
+        input_name = input("Sláðu inn nafn lyklaborðs eða fjarstýringar: ")
         input_path = select_input_device(input_name)
 
-    if "ps" in input_name.lower():
+    if ("ps" or "cont") in input_name.lower():
         ps5_control(input_path)
     else:
         keyboard_control(input_path)
