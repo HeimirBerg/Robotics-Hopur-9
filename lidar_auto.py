@@ -5,9 +5,9 @@ import time
 from collections import deque
 
 # --- Fastar ---
-speed         = 70
-turn_distance = 120  # cm — start turning
-stop_distance = 40   # cm — stop and spin in place
+speed         = 150
+turn_distance = 180  # cm — start turning
+stop_distance = 20   # cm — stop and spin in place
 STUCK_THRESHOLD = 3  # cm — how little movement counts as stuck
 STUCK_TIME      = 15 # how many readings before declaring stuck
 
