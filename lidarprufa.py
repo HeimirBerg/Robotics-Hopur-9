@@ -6,9 +6,6 @@ from pyrplidar import PyRPlidar
 LIDAR_PORT = "/dev/ttyUSB0"
 BAUDRATE   = 1000000
 MAX_RANGE  = 300   # cm — ignore anything beyond this
-front = get_distance(315, 45)   # wider front — 90° arc
-left  = get_distance(225, 315)  # left side
-right = get_distance(45, 135)   # right side
 # --- Shared scan data ---
 _scan_data = {}   # angle(int) -> distance(cm)
 _lock      = threading.Lock()
@@ -78,3 +75,7 @@ def get_distance(start_angle, end_angle):
         values = [v for k, v in data.items() if k >= start_angle or k <= end_angle]
 
     return min(values) if values else 999
+
+front = get_distance(315, 45)   # wider front — 90° arc
+left  = get_distance(225, 315)  # left side
+right = get_distance(45, 135)   # right side
