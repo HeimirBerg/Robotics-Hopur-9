@@ -6,7 +6,7 @@ from collections import deque
 
 # --- Fastar ---
 speed         = 150
-turn_distance = 180  # cm — start turning
+turn_distance = 80   # cm — start turning
 stop_distance = 20   # cm — stop and spin in place
 STUCK_THRESHOLD = 3  # cm — how little movement counts as stuck
 STUCK_TIME      = 15 # how many readings before declaring stuck
@@ -26,9 +26,9 @@ def autopilot():
 
     try:
         while True:
-            front = get_distance(315, 45)
-            left  = get_distance(225, 315)
+            front = get_distance(300, 60)
             right = get_distance(45, 135)
+            left  = get_distance(225, 315)
 
             recent_fronts.append(front)
 
@@ -39,8 +39,11 @@ def autopilot():
                 recent_fronts.clear()
                 fara_aftur(speed)
                 time.sleep(0.8)
-                beygja("Hægri", speed, -speed)
-                time.sleep(1.0)
+                if left > right:
+                    beygja("Vinstri", speed, -speed)
+                else:
+                    beygja("Hægri", speed, -speed)
+                time.sleep(0.6)  # was 1.0 — shorter so he doesn't overshoot
 
             elif front > turn_distance:
                 fara_afram(speed)
@@ -53,13 +56,12 @@ def autopilot():
                     beygja("Hægri", speed, inner)
 
             else:
-                stoppa()
-                time.sleep(0.2)
+                # Spin immediately — no stoppa() pause
                 if left > right:
                     beygja("Vinstri", speed, -speed)
                 else:
                     beygja("Hægri", speed, -speed)
-                time.sleep(0.5)
+                time.sleep(0.3)  # was 0.5 — shorter so he doesn't overshoot
 
             time.sleep(0.1)
 
