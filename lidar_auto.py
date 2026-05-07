@@ -19,17 +19,21 @@ def autopilot():
             right = get_distance(45, 135)
 
             if front > max_distance:
-                fara_afram(speed)       # front is clear — always go forward
+                # front is clear — go forward
+                fara_afram(speed)
 
-            elif left > right:
-                reikna_beygju("Vinstri", left, speed)
-
-            elif right >= left:
-                reikna_beygju("Hægri", right, speed)
+            elif left > min_distance or right > min_distance:
+                # front blocked but one side has room — turn that way
+                if left > right:
+                    reikna_beygju("Vinstri", left, speed)
+                else:
+                    reikna_beygju("Hægri", right, speed)
 
             else:
+                # everything blocked — spin around and go back
+                beygja("Hægri", speed, -speed)  # spin on the spot
+                time.sleep(1.5)                  # enough to turn ~180°
                 fara_aftur(speed)
-                time.sleep(0.5)
 
             time.sleep(0.1)
 
