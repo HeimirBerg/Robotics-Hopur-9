@@ -1,32 +1,12 @@
-from lidarprufa import start_lidar, stop_lidar, get_distance
+from lidarprufa import *
 from hreyfing import *
 
 import time
 
-# --- Settings ---
-HRADI     = 100
-TOO_CLOSE = 30   # cm — back up if everything is this close
-TURNING   = 80   # cm — start turning if front is closer than this
-
-
-def get_action():
-    """Read LiDAR sectors and decide what to do."""
-    front = get_distance(315, 45)   # wider front — 90° arc
-    left  = get_distance(225, 315)  # left side
-    right = get_distance(45, 135)   # right side
-
-    if front > TURNING and left > TOO_CLOSE and right > TOO_CLOSE:
-        return "forward", 0
-
-    elif left > right:
-        return "left", left   # pass room so beygja can scale the turn
-
-    elif right >= left:
-        return "right", right
-
-    else:
-        return "back", 0
-
+# --- Fastar ---
+speed     = 100
+min_distance = 30   # Hvenær á að byrja að bakka
+max_distance = 80   # Hvenær hann á að byrja að beygja
 
 def autopilot():
     start_lidar()
@@ -34,21 +14,20 @@ def autopilot():
 
     try:
         while True:
-            action, room = get_action()
 
-            if action == "forward":
-                fara_afram(HRADI)
+            if front > max_distance and left > min_distance and right > min_distance:
+                fara_afram(speed)
 
-            elif action == "left":
-                radius = int(HRADI * min(room, 100) / 100)
-                beygja("Vinstri", HRADI, radius)
+            elif left > right:
+                radius = int(speed * min(left, 100) / 100)
+                beygja("Vinstri", speed, radius)
 
-            elif action == "right":
-                radius = int(HRADI * min(room, 100) / 100)
-                beygja("Hægri", HRADI, radius)
+            elif right >= left:
+                radius = int(speed * min(right, 100) / 100)
+                beygja("Hægri", speed, radius)
 
-            elif action == "back":
-                fara_aftur(HRADI)
+            else:
+                fara_aftur(speed)
                 time.sleep(0.5)
 
             time.sleep(0.1)
