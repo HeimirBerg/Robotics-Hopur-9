@@ -4,7 +4,7 @@ from hreyfing import *
 import time
 
 # --- Fastar ---
-speed     = 100
+speed     = 70
 min_distance = 30   # Hvenær á að byrja að bakka
 max_distance = 80   # Hvenær hann á að byrja að beygja
 
@@ -17,12 +17,14 @@ def autopilot():
 
             if front > max_distance and left > min_distance and right > min_distance:
                 fara_afram(speed)
+                print("Áfram")
 
             elif left > right:
                 reikna_beygju("Vinstri", left, speed)
-
+                print("Vinstri")
             elif right >= left:
                 reikna_beygju("Hægri", right, speed)
+                print("Hægri")
             else:
                 fara_aftur(speed)
                 time.sleep(0.5)
