@@ -1,6 +1,6 @@
 import threading
 import time
-from pyrplidar import PyRPlidar
+from pyrplidar import PyRPlidar # type: ignore
 
 # --- Configuration ---
 LIDAR_PORT = "/dev/ttyUSB0"
