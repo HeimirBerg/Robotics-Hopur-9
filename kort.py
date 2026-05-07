@@ -7,9 +7,9 @@ def tiusent():
     time.sleep(0.25)
     stoppa()
 
-def snua():
+def snua(): ## 90 gradur
     senda(255, 255)
-    time.sleep(0.4)
+    time.sleep(0.43)
     stoppa()
 
 while True:
