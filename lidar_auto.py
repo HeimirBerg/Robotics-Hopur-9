@@ -4,9 +4,9 @@ from hreyfing import *
 import time
 
 # --- Fastar ---
-speed     = 100
-min_distance = 30   # Hvenær á að byrja að bakka
-max_distance = 80   # Hvenær hann á að byrja að beygja
+speed         = 70
+turn_distance = 120  # cm — start turning
+stop_distance = 40    # Hvenær hann á að byrja að beygja
 
 def autopilot():
     start_lidar()
@@ -20,21 +20,26 @@ def autopilot():
 
             print(f"front: {front:.0f}  left: {left:.0f}  right: {right:.0f}")
 
-            if front > max_distance:
+            if front > turn_distance:
+                # all clear — go straight
                 fara_afram(speed)
 
-            elif left > right:
-                # turn left — sharper if front is very close
-                inner = int(speed * front / max_distance)
-                beygja("Vinstri", speed, inner)
-
-            elif right >= left:
-                # turn right — sharper if front is very close
-                inner = int(speed * front / max_distance)
-                beygja("Hægri", speed, inner)
+            elif front > stop_distance:
+                # getting close — gentle arc away
+                inner = int(speed * front / turn_distance)
+                if left > right:
+                    beygja("Vinstri", speed, inner)
+                else:
+                    beygja("Hægri", speed, inner)
 
             else:
-                fara_aftur(speed)
+                # too close — stop and spin in place
+                stoppa()
+                time.sleep(0.2)
+                if left > right:
+                    beygja("Vinstri", speed, -speed)
+                else:
+                    beygja("Hægri", speed, -speed)
                 time.sleep(0.5)
 
             time.sleep(0.1)
