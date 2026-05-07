@@ -18,8 +18,11 @@ def _scan_worker():
     lidar = PyRPlidar()
     try:
         lidar.connect(port=LIDAR_PORT, baudrate=BAUDRATE, timeout=3)
-        lidar.lidar_serial.set_dtr(False)  # enables motor on S2L
-        time.sleep(1)
+        lidar.reset()
+        time.sleep(5)
+
+        # flush leftover reset bytes from buffer
+        lidar.lidar_serial._serial.reset_input_buffer()
 
         scan_gen = lidar.start_scan()
 
@@ -38,7 +41,6 @@ def _scan_worker():
         print(f"LiDAR error: {e}")
     finally:
         try:
-            lidar.lidar_serial.set_dtr(True)
             lidar.stop()
             lidar.disconnect()
             print("LiDAR disconnected.")
@@ -51,7 +53,7 @@ def start_lidar():
     _running = True
     _thread  = threading.Thread(target=_scan_worker, daemon=True)
     _thread.start()
-    time.sleep(2)
+    time.sleep(8)   # wait for reset (5s) + first scan
     print("LiDAR ready.")
 
 
