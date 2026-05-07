@@ -9,7 +9,7 @@ velur sjálfvirkt hvaða keyrslu fall á að nota.
 import evdev # type: ignore
 import time
 
-from ..config import Speed, TurnStage  # TODO: Setja inn type fyrir harða og beygjur
+from config import Speed, TurnStage  # TODO: Setja inn type fyrir harða og beygjur
 import hreyfing as m
 # TODO: import movement as m
 
