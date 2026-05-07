@@ -26,7 +26,7 @@ def autopilot():
 
     try:
         while True:
-            front = get_distance(315, 45)
+            front = get_distance(300, 60)
             right = get_distance(45, 135)
             left  = get_distance(225, 315)
 
