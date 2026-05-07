@@ -5,7 +5,7 @@ from pyrplidar import PyRPlidar
 # --- Configuration ---
 LIDAR_PORT = "/dev/ttyUSB0"
 BAUDRATE   = 1000000
-MAX_RANGE  = 300   # cm — ignore anything beyond this
+MAX_RANGE  = 300   
 # --- Shared scan data ---
 _scan_data = {}   # angle(int) -> distance(cm)
 _lock      = threading.Lock()
@@ -52,7 +52,7 @@ def start_lidar():
     _running = True
     _thread  = threading.Thread(target=_scan_worker, daemon=True)
     _thread.start()
-    time.sleep(8)   # wait for reset (5s) + first scan
+    time.sleep(8)   
     print("LiDAR ready.")
 
 
