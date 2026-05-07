@@ -39,11 +39,12 @@ def autopilot():
                 recent_fronts.clear()
                 fara_aftur(speed)
                 time.sleep(0.8)
-                if left > right:
-                    beygja("Vinstri", speed, -speed)
-                else:
-                    beygja("Hægri", speed, -speed)
-                time.sleep(0.6)  # was 1.0 — shorter so he doesn't overshoot
+                turn_dir = "Vinstri" if left > right else "Hægri"
+                # Keep turning until front is clear
+                while get_distance(300, 60) <= turn_distance:
+                    beygja(turn_dir, speed, 0)
+                    time.sleep(0.1)
+                print("Stuck resolved.")
 
             elif front > turn_distance:
                 fara_afram(speed)
@@ -56,12 +57,12 @@ def autopilot():
                     beygja("Hægri", speed, inner)
 
             else:
-                # Spin immediately — no stoppa() pause
-                if left > right:
-                    beygja("Vinstri", speed, -speed)
-                else:
-                    beygja("Hægri", speed, -speed)
-                time.sleep(0.3)  # was 0.5 — shorter so he doesn't overshoot
+                turn_dir = "Vinstri" if left > right else "Hægri"
+                print(f"Too close! Spinning {turn_dir}...")
+                # Keep spinning until front is clear
+                while get_distance(300, 60) <= stop_distance:
+                    beygja(turn_dir, speed, 0)
+                    time.sleep(0.1)
 
             time.sleep(0.1)
 
