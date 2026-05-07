@@ -5,9 +5,9 @@ import time
 from collections import deque
 
 # --- Fastar ---
-speed         = 150
-turn_distance = 180  # cm — start turning
-stop_distance = 20   # cm — stop and spin in place
+speed         = 70
+turn_distance = 120  # cm — start turning
+stop_distance = 40   # cm — stop and spin in place
 STUCK_THRESHOLD = 3  # cm — how little movement counts as stuck
 STUCK_TIME      = 15 # how many readings before declaring stuck
 
@@ -27,8 +27,8 @@ def autopilot():
     try:
         while True:
             front = get_distance(315, 45)
-            left  = get_distance(225, 315)
-            right = get_distance(45, 135)
+            left  = get_distance(45, 135)
+            right = get_distance(225, 315)
 
             recent_fronts.append(front)
 
@@ -39,7 +39,10 @@ def autopilot():
                 recent_fronts.clear()
                 fara_aftur(speed)
                 time.sleep(0.8)
-                beygja("Hægri", speed, -speed)
+                if left > right:
+                    beygja("Vinstri", speed, -speed)
+                else:
+                    beygja("Hægri", speed, -speed)
                 time.sleep(1.0)
 
             elif front > turn_distance:
