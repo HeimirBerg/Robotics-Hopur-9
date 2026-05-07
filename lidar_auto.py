@@ -4,9 +4,9 @@ from hreyfing import *
 import time
 
 # --- Fastar ---
-speed         = 70
+speed         = 150
 turn_distance = 120  # cm — start turning
-stop_distance = 40    # Hvenær hann á að byrja að beygja
+stop_distance = 20    # Hvenær hann á að byrja að beygja
 
 def autopilot():
     start_lidar()
