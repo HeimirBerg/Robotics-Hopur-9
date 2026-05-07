@@ -76,6 +76,3 @@ def get_distance(start_angle, end_angle):
 
     return min(values) if values else 999
 
-front = get_distance(315, 45)   # wider front — 90° arc
-left  = get_distance(225, 315)  # left side
-right = get_distance(45, 135)   # right side

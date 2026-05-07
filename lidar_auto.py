@@ -14,7 +14,9 @@ def autopilot():
 
     try:
         while True:
-
+            front = get_distance(315, 45)   
+            left  = get_distance(225, 315)  
+            right = get_distance(45, 135)   
             if front > max_distance and left > min_distance and right > min_distance:
                 fara_afram(speed)
                 print("Áfram")
