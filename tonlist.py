@@ -7,5 +7,4 @@ def tonlist(skra):
 tonar = ["guiltynigga.mp3", "baciate.mp3", "barbie.mp3", "Adolf Hitler Speech in 1935.mp3"]
 
 def rtonn():
-    r = random.randint(0,len(tonar))
-    return tonar[r]
+    return random.choice(tonar)
