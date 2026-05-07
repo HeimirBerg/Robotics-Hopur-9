@@ -1,24 +1,29 @@
-from lidarprufa import *
+from lidarprufa import start_lidar, stop_lidar, get_distance
 from hreyfing import *
+
 import time
 from collections import deque
-import statistics
 
 # --- Fastar ---
 speed         = 150
-turn_distance = 80
-stop_distance = 30
-STUCK_THRESHOLD = 3    # cm — how little movement counts as stuck
-STUCK_TIME      = 15   # how many readings before declaring stuck
+turn_distance = 180  # cm — start turning
+stop_distance = 20   # cm — stop and spin in place
+STUCK_THRESHOLD = 3  # cm — how little movement counts as stuck
+STUCK_TIME      = 15 # how many readings before declaring stuck
 
 recent_fronts = deque(maxlen=STUCK_TIME)
+
 
 def is_stuck():
     if len(recent_fronts) < STUCK_TIME:
         return False
     return max(recent_fronts) - min(recent_fronts) < STUCK_THRESHOLD
 
+
 def autopilot():
+    start_lidar()
+    print("Autopilot running.")
+
     try:
         while True:
             front = get_distance(315, 45)
@@ -57,5 +62,6 @@ def autopilot():
                 time.sleep(0.5)
 
             time.sleep(0.1)
+
     finally:
         stop_lidar()
