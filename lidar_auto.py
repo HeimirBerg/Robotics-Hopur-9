@@ -1,9 +1,31 @@
-from lidarprufa import *
+from lidarprufa import start_lidar, stop_lidar, get_distance
 from hreyfing import *
 
 import time
 
-HRADI = 200
+# --- Settings ---
+HRADI     = 200
+TOO_CLOSE = 30   # cm — back up if everything is this close
+TURNING   = 80   # cm — start turning if front is closer than this
+
+
+def get_action():
+    """Read LiDAR sectors and decide what to do."""
+    front = get_distance(345, 15)
+    left  = get_distance(315, 345)
+    right = get_distance(15,  45)
+
+    if front > TURNING and left > TOO_CLOSE and right > TOO_CLOSE:
+        return "forward", 0
+
+    elif left > right:
+        return "left", left   # pass room so beygja can scale the turn
+
+    elif right >= left:
+        return "right", right
+
+    else:
+        return "back", 0
 
 
 def autopilot():
@@ -12,16 +34,18 @@ def autopilot():
 
     try:
         while True:
-            action = get_action()
+            action, room = get_action()
 
             if action == "forward":
                 fara_afram(HRADI)
 
             elif action == "left":
-                beygja("Vinstri", HRADI, -HRADI)
+                radius = int(HRADI * min(room, 100) / 100)
+                beygja("Vinstri", HRADI, radius)
 
             elif action == "right":
-                beygja("Hægri", HRADI, -HRADI)
+                radius = int(HRADI * min(room, 100) / 100)
+                beygja("Hægri", HRADI, radius)
 
             elif action == "back":
                 fara_aftur(HRADI)

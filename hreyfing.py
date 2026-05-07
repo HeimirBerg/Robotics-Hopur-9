@@ -21,18 +21,17 @@ def fara_aftur(hradi):
     hradi = int(hradi)
     return senda(-hradi,hradi)
 
-def beygja(att,hradi,radius):
-    hradi = int(hradi)
-    radius = int(radius)
+def beygja(att, m1, m2):
+    m1 = int(m1)
+    m2 = int(m2)
 
     if att == "Hægri":
-        return senda(hradi,-radius)
+        return senda(m1, -m2)
 
     elif att == "Vinstri":
-        return senda(radius,-hradi)
-    else: 
+        return senda(m2, -m1)
+    else:
         return "Villa! skrifaðu annað hvort \"Hægri\" eða \"Vinstri\""
-
 def stoppa():
     return senda(0,0)
 
