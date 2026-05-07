@@ -5,7 +5,7 @@ from pyrplidar import PyRPlidar # type: ignore
 # --- Configuration ---
 LIDAR_PORT = "/dev/ttyUSB0"
 BAUDRATE   = 1000000
-MAX_RANGE  = 300   # cm — ignore anything beyond this
+MAX_RANGE  = 800   # cm — ignore anything beyond this
 
 # --- Shared scan data ---
 _scan_data = {}   # angle(int) -> distance(cm)
