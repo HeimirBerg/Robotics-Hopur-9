@@ -7,6 +7,10 @@ LIDAR_PORT = "/dev/ttyUSB0"
 BAUDRATE   = 1000000
 MAX_RANGE  = 300   # cm — ignore anything beyond this
 
+# --- Thresholds (cm) ---
+TOO_CLOSE = 30   # back up if everything is this close
+TURNING   = 80   # start turning if front is closer than this
+
 # --- Shared scan data ---
 _scan_data = {}   # angle(int) -> distance(cm)
 _lock      = threading.Lock()
@@ -70,7 +74,23 @@ def get_distance(start_angle, end_angle):
     if start_angle <= end_angle:
         values = [v for k, v in data.items() if start_angle <= k <= end_angle]
     else:
-        # wraps around 0 degrees (e.g. 315 -> 360)
+        # wraps around 0 degrees (e.g. 315 -> 15)
         values = [v for k, v in data.items() if k >= start_angle or k <= end_angle]
 
     return min(values) if values else 999
+
+
+def get_action():
+    """Decide what the robot should do based on current LiDAR readings."""
+    front = get_distance(345, 15)
+    left  = get_distance(315, 345)
+    right = get_distance(15,  45)
+
+    if front > TURNING and left > TOO_CLOSE and right > TOO_CLOSE:
+        return "forward"
+    elif left > right:
+        return "left"
+    elif right >= left:
+        return "right"
+    else:
+        return "back"
