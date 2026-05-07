@@ -13,10 +13,10 @@ def snua():
     stoppa()
 
 while True:
-    x = input("Hvað á að gera?")
-    if x == 1:
+    x = input("Hvað á að gera? ")
+    if x == "1":
         tiusent()
         break
-    elif x == 2:
+    elif x == "2":
         snua()
         break
