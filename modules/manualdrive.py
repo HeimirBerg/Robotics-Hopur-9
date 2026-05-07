@@ -9,7 +9,7 @@ velur sjálfvirkt hvaða keyrslu fall á að nota.
 import evdev # type: ignore
 import time
 
-# from config import Speed, TurnStage  # TODO: Setja inn type fyrir harða og beygjur
+from ..config import Speed, TurnStage  # TODO: Setja inn type fyrir harða og beygjur
 import hreyfing as m
 # TODO: import movement as m
 
@@ -53,7 +53,7 @@ def select_input_device(device_name: str) -> str | None:
         return None
 
 
-def calculate_speeds(reference_time: float, init_speed: int, init_turn: int) -> tuple[int, int]:
+def calculate_speeds(reference_time: float, init_speed: Speed, init_turn: TurnStage) -> tuple[Speed, TurnStage]:
     """
     Reiknar aukinn hraða og beygju hraða eftir ákveðna seinkun.
     
@@ -63,16 +63,16 @@ def calculate_speeds(reference_time: float, init_speed: int, init_turn: int) -> 
     :return: Útreiknaður hraði og beygju skref í túplu.
     """
 
-    MIN_SPEED: int = 15   # Minnsti hraði sem er hægt að senda á mótora
-    MAX_SPEED: int = 255  # Mesti hraði sem er hægt að senda á mótora
-    MIN_TURN: int = -1    # Minnsta beygja sem er hægt að taka
-    MAX_TURN: int = 3     # Mesta beygja sem er hægt að taka
-    SPEED_BOOST: int = 50 # Hraði sem er bætt við þegar takka hefur verið haldi í biðtíma
+    MIN_SPEED = Speed(15)   # Minnsti hraði sem er hægt að senda á mótora
+    MAX_SPEED = Speed(255)  # Mesti hraði sem er hægt að senda á mótora
+    MIN_TURN = TurnStage(-1)    # Minnsta beygja sem er hægt að taka
+    MAX_TURN = TurnStage(3)     # Mesta beygja sem er hægt að taka
+    SPEED_BOOST = Speed(50) # Hraði sem er bætt við þegar takka hefur verið haldi í biðtíma
     WAIT_TIME_1: int = 3  # [s]
     WAIT_TIME_2: int = 10 # [s]
 
     # Hjálpar fall til að losna við if setningar
-    def clamp(low: int, value: int, high: int) -> int:
+    def clamp(low, value, high):
         """Klemmir gildi á milli `low` (MIN) og `high` (MAX)."""
         return max(low, min(value, high))
 
@@ -94,46 +94,46 @@ def calculate_speeds(reference_time: float, init_speed: int, init_turn: int) -> 
     return speed, turn
 
 
-def get_new_speed() -> int:
+def get_new_speed() -> Speed:
     """Spyr notanda um nýjann hraða."""
 
-    MIN_SPEED: int = 15       # Minnsti hraði sem er hægt að senda á mótora
-    MAX_SPEED: int = 255      # Mesti hraði sem er hægt að senda á mótora
-    speed: int | None = None  # Valinn hraði
+    # MIN_SPEED: int = 15       # Minnsti hraði sem er hægt að senda á mótora
+    # MAX_SPEED: int = 255      # Mesti hraði sem er hægt að senda á mótora
+    speed: Speed | None = None  # Valinn hraði
 
     while speed is None:
         try:
-            speed = int(input("Veldu nýjann hraða á bilinu [15 til 255]: "))
+            speed = Speed(input("Veldu nýjann hraða á bilinu [15 til 255]: "))
 
-            if not (MIN_SPEED <= speed <= MAX_SPEED):
-                speed = None
-                print("Ógildur hraði valinn. Bilið er [15 til 255].")
+            # if not (MIN_SPEED <= speed <= MAX_SPEED):
+            #     speed = None
+            #     print("Ógildur hraði valinn. Bilið er [15 til 255].")
         
-        except ValueError:
+        except ValueError as _e:
             speed = None
-            print("Ógildur hraði sleginn inn. Sláðu inn tölustaf.")
+            print(f"Ógildur hraði sleginn inn. {_e}.")
     
     return speed
 
 
-def get_new_turn() -> int:
+def get_new_turn() -> TurnStage:
     """Spyr notanda um nýtt beygju skref."""
 
-    MIN_TURN: int = -1       # Minnsta beygja sem er hægt að taka
-    MAX_TURN: int = 3        # Mesta beygja sem er hægt að taka
-    turn: int | None = None  # Sjálfgefið beygju skref
+# //    MIN_TURN: int = -1       # Minnsta beygja sem er hægt að taka
+# //    MAX_TURN: int = 3        # Mesta beygja sem er hægt að taka
+    turn: TurnStage | None = None  # Sjálfgefið beygju skref
 
     while turn is None:
         try:
-            turn = int(input("Veldu nýtt beygju skref á bilinu [-1 til 3]: "))
+            turn = TurnStage(input("Veldu nýtt beygju skref á bilinu [-1 til 3]: "))
 
-            if not (MIN_TURN <= turn <= MAX_TURN):
-                turn = None
-                print("Ógilt beygju skref valið. Bilið er [-1 til 3].")
+# //              if not (MIN_TURN <= turn <= MAX_TURN):
+# //                  turn = None
+# //                  print("Ógilt beygju skref valið. Bilið er [-1 til 3].")
         
-        except ValueError:
+        except ValueError as _e:
             turn = None
-            print("Ógilt beygju skref valið. Sláðu inn tölustaf.")
+            print(f"Ógilt beygju skref valið. {_e}.")
 
     return turn
 
@@ -144,8 +144,8 @@ def keyboard_control(device_path: str) -> None:
     device = evdev.InputDevice(device_path) # Slóðin á lyklaborðið
 
     keys_held: set[str] = set() # Mengi með tökkum sem er haldið inni
-    init_speed: int = 100       # Upphafs/sjálfgefinn hraði [15 til 255]
-    init_turn_stage: int = 0    # Upphafs/sjálfgefinn beygju stig [-1 til 3]
+    init_speed = Speed(100)       # Upphafs/sjálfgefinn hraði [15 til 255]
+    init_turn_stage = TurnStage(0)    # Upphafs/sjálfgefinn beygju stig [-1 til 3]
     start_time: float = 0.0     # Tími tekinn þegar fyrsta takka er ýtt niður [s]
 
     print("=== Tilbúinn í keyrslu með lyklaborði ===")
