@@ -4,16 +4,16 @@ from hreyfing import *
 import time
 
 # --- Settings ---
-HRADI     = 200
+HRADI     = 100
 TOO_CLOSE = 30   # cm — back up if everything is this close
 TURNING   = 80   # cm — start turning if front is closer than this
 
 
 def get_action():
     """Read LiDAR sectors and decide what to do."""
-    front = get_distance(345, 15)
-    left  = get_distance(315, 345)
-    right = get_distance(15,  45)
+    front = get_distance(315, 45)   # wider front — 90° arc
+    left  = get_distance(225, 315)  # left side
+    right = get_distance(45, 135)   # right side
 
     if front > TURNING and left > TOO_CLOSE and right > TOO_CLOSE:
         return "forward", 0
