@@ -19,13 +19,10 @@ def autopilot():
                 fara_afram(speed)
 
             elif left > right:
-                radius = int(speed * min(left, 100) / 100)
-                beygja("Vinstri", speed, radius)
+                reikna_beygju("Vinstri", left, speed)
 
             elif right >= left:
-                radius = int(speed * min(right, 100) / 100)
-                beygja("Hægri", speed, radius)
-
+                reikna_beygju("Hægri", right, speed)
             else:
                 fara_aftur(speed)
                 time.sleep(0.5)
