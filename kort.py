@@ -3,6 +3,6 @@ import time
 from hreyfing import *
 
 
-senda(255, 255)
+senda(255, -255)
 time.sleep(1)
 stoppa()
