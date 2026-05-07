@@ -6,11 +6,12 @@ Gefur notenda valmöguleika á milli tækja og
 velur sjálfvirkt hvaða keyrslu fall á að nota.
 """
 
-import evdev
+import evdev # type: ignore
 import time
 
+# from config import Speed, TurnStage  # TODO: Setja inn type fyrir harða og beygjur
 import hreyfing as m
-# import movement as m
+# TODO: import movement as m
 
 
 def find_input_devices() -> None:
@@ -59,7 +60,7 @@ def calculate_speeds(reference_time: float, init_speed: int, init_turn: int) -> 
     :reference_time: Viðmiðunar tími í reikningum.
     :init_speed: Upphafs hraði.
     :init_turn: Upphafs beygju stig.
-    :return: Útreiknaður hraði og beygju skref.
+    :return: Útreiknaður hraði og beygju skref í túplu.
     """
 
     MIN_SPEED: int = 15   # Minnsti hraði sem er hægt að senda á mótora
@@ -70,7 +71,7 @@ def calculate_speeds(reference_time: float, init_speed: int, init_turn: int) -> 
     WAIT_TIME_1: int = 3  # [s]
     WAIT_TIME_2: int = 10 # [s]
 
-    # Hjálpar fall
+    # Hjálpar fall til að losna við if setningar
     def clamp(low: int, value: int, high: int) -> int:
         """Klemmir gildi á milli `low` (MIN) og `high` (MAX)."""
         return max(low, min(value, high))
@@ -206,7 +207,7 @@ def keyboard_control(device_path: str) -> None:
         print(f"=== Hætti í keyrslu ===\n{"Úps...":^23}")
         return
 
-
+# TODO: Á eftir að útfæra
 def ps5_control(device_path: str) -> None:
     """Stýri- og keyrsluvirkni með PlayStation fjarstýringu."""
     raise NotImplementedError
@@ -225,7 +226,7 @@ def manual() -> None:
         input_name = input("Sláðu inn nafn lyklaborðs eða fjarstýringar: ")
         input_path = select_input_device(input_name)
 
-    if "ps" in input_name.lower():  # Á kannski eftir að breytast
+    if "ps" in input_name.lower():  # ? Á kannski eftir að breytast
         ps5_control(input_path)
     else:
         keyboard_control(input_path)
