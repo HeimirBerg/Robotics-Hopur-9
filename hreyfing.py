@@ -21,18 +21,17 @@ def fara_aftur(hradi):
     hradi = int(hradi)
     return senda(-hradi,hradi)
 
-def beygja(att,hradi,radius):
-    hradi = int(hradi)
-    radius = int(radius)
+def beygja(att, m1, m2):
+    m1 = int(m1)
+    m2 = int(m2)
 
     if att == "Hægri":
-        return senda(hradi,-radius)
+        return senda(m1, -m2)
 
     elif att == "Vinstri":
-        return senda(radius,-hradi)
-    else: 
+        return senda(m2, -m1)
+    else:
         return "Villa! skrifaðu annað hvort \"Hægri\" eða \"Vinstri\""
-
 def stoppa():
     return senda(0,0)
 
@@ -89,17 +88,11 @@ def velja_radius(hradi):
     radius = int(radius)
     return radius
 
-def reikna_beygju(servo_angle, distance, hradi, servoenable=True):
+def reikna_beygju(direction, distance, hradi):
     radius = int(hradi * (distance - 20) / 80)
     radius = max(0, radius)
-
-    if not servoenable:
-        return beygja("Beint", hradi, radius)
-
-    if servo_angle < 90:
-        return beygja("Hægri", hradi, radius)
-    else:
-        return beygja("Vinstri", hradi, radius)
+    return beygja(direction, hradi, radius)
+    
     
 
 
