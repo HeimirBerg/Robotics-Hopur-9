@@ -17,7 +17,9 @@ def autopilot():
             front = get_distance(315, 45)
             left  = get_distance(225, 315)
             right = get_distance(45, 135)
-
+            
+            print(f"front: {front:.0f}  left: {left:.0f}  right: {right:.0f}")
+            
             if front > max_distance:
                 # front is clear — go forward
                 fara_afram(speed)
