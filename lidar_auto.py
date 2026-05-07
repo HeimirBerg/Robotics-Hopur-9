@@ -14,19 +14,19 @@ def autopilot():
 
     try:
         while True:
-            front = get_distance(315, 45)   
-            left  = get_distance(225, 315)  
-            right = get_distance(45, 135)   
-            if front > max_distance and left > min_distance and right > min_distance:
-                fara_afram(speed)
-                print(front)
+            front = get_distance(315, 45)
+            left  = get_distance(225, 315)
+            right = get_distance(45, 135)
+
+            if front > max_distance:
+                fara_afram(speed)       # front is clear — always go forward
 
             elif left > right:
                 reikna_beygju("Vinstri", left, speed)
-                print(left)
+
             elif right >= left:
                 reikna_beygju("Hægri", right, speed)
-                print(right)
+
             else:
                 fara_aftur(speed)
                 time.sleep(0.5)
