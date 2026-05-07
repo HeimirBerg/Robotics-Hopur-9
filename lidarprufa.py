@@ -5,7 +5,8 @@ from pyrplidar import PyRPlidar
 # --- Configuration ---
 LIDAR_PORT = "/dev/ttyUSB0"
 BAUDRATE   = 1000000
-MAX_RANGE  = 300   
+MAX_RANGE  = 300   # cm — ignore anything beyond this
+
 # --- Shared scan data ---
 _scan_data = {}   # angle(int) -> distance(cm)
 _lock      = threading.Lock()
@@ -52,7 +53,7 @@ def start_lidar():
     _running = True
     _thread  = threading.Thread(target=_scan_worker, daemon=True)
     _thread.start()
-    time.sleep(8)   
+    time.sleep(8)   # wait for reset (5s) + first scan
     print("LiDAR ready.")
 
 
@@ -74,5 +75,4 @@ def get_distance(start_angle, end_angle):
         # wraps around 0 degrees (e.g. 315 -> 15)
         values = [v for k, v in data.items() if k >= start_angle or k <= end_angle]
 
-    return min(values) if values else 999
-
+    return min(values) if values else 0
