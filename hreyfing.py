@@ -1,6 +1,8 @@
-import smbus
+import smbus # type: ignore
 I2C_ADDRESS = 0x50   # Arduino slave address
 bus = smbus.SMBus(1) # I2C bus on Pi Zero / Pi 3 / Pi 4
+
+from config import Speed, Velocity, TurnStage
 
 def senda(m1,m2):
     m1 = int(m1)
@@ -105,7 +107,7 @@ def reikna_beygju(direction, distance, hradi):
 DATA_REGISTER = 0x00  # Pi address to write data to
 
 
-def send_speeds(m1: int, m2: int) -> str:
+def send_speeds(m1: Velocity | int, m2: Velocity | int) -> str:
     """
     Sends velocity values to each motor. Corrects sign on inverted Motor 2
     
@@ -114,12 +116,12 @@ def send_speeds(m1: int, m2: int) -> str:
     
     try:
         # Check if inputs are integers
-        m1 = int(m1)
-        m2 = int(m2)
+        m1 = Velocity(m1)
+        m2 = Velocity(m2)
 
-        # Validate range
-        if not ((-255 <= m1 <= 255) and (-255 <= m2 <= 255)):
-            return "Requested speeds not in range -255 to 255."
+        # // # Validate range
+        # // if not ((-255 <= m1 <= 255) and (-255 <= m2 <= 255)):
+        # //    return "Requested speeds not in range -255 to 255."
         
         # Split input into magnitude + sign
         m1_speed = abs(m1)
@@ -146,7 +148,7 @@ def stop() -> str:
     return "Motors stopped"
 
 
-def drive(speed: int, direction: int, turn_stage: int = 0) -> None:
+def drive(speed: Speed | int, direction: int, turn_stage: TurnStage | int = 0) -> None:
     """
     Combined driving functions. Includes speed assignment to each motor, direction and turning logic.
 
@@ -156,20 +158,20 @@ def drive(speed: int, direction: int, turn_stage: int = 0) -> None:
     """
 
     # Setup
-    m1: int = 0         # Velocity sent to Motor 1
-    m2: int = 0         # Velocity sent to Motor 2
-    turn_speed: int = 0 # Speed of the wheel inside turn
+    # m1 = Velocity(0)     # Velocity sent to Motor 1
+    # m2 = Velocity(0)     # Velocity sent to Motor 2
+    turn_speed: int = 0  # Speed of the wheel inside turn
 
     try:
         # Check if inputs are integers
-        speed = int(speed)
+        speed = Speed(speed)
         direction = int(direction)
-        turn_stage = int(turn_stage)
+        turn_stage = TurnStage(turn_stage)
 
         # Range check inputs
-        if not (15 <= speed <= 255):
-            print("Invalid speed entered! Range is 15-255.")
-            return
+        # if not (15 <= speed <= 255):
+        #     print("Invalid speed entered! Range is 15-255.")
+        #     return
             
         # Calculate speed of wheel inside turn
         if turn_stage == -1:
@@ -182,23 +184,20 @@ def drive(speed: int, direction: int, turn_stage: int = 0) -> None:
             turn_speed = int(speed/1.9)
         elif turn_stage == 3:
             turn_speed = int(speed/1.3)
-        else:
-            turn_speed = 0
-            print("Invalid turn stage selected! Default of 0 used. Options are -1 to 3.")
 
         # Assign velocity values sent to each motor
         if direction == 1:   # Forward
-            m1 = speed
-            m2 = speed
+            m1 = Velocity(speed)
+            m2 = Velocity(speed)
         elif direction == 2: # Reverse
-            m1 = -speed
-            m2 = -speed
+            m1 = Velocity(-speed)
+            m2 = Velocity(-speed)
         elif direction == 3: # Turn left
-            m1 = turn_speed
-            m2 = speed
+            m1 = Velocity(turn_speed)
+            m2 = Velocity(speed)
         elif direction == 4: # Turn right
-            m1 = speed
-            m2 = turn_speed
+            m1 = Velocity(speed)
+            m2 = Velocity(turn_speed)
         else:
             print(stop())
             print("Invalid direction selected! Options are 1 to 4.")

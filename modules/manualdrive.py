@@ -9,7 +9,7 @@ velur sjálfvirkt hvaða keyrslu fall á að nota.
 import evdev # type: ignore
 import time
 
-from config import Speed, TurnStage  # TODO: Setja inn type fyrir harða og beygjur
+from config import Speed, TurnStage
 import hreyfing as m
 # TODO: import movement as m
 
@@ -97,18 +97,12 @@ def calculate_speeds(reference_time: float, init_speed: Speed, init_turn: TurnSt
 def get_new_speed() -> Speed:
     """Spyr notanda um nýjann hraða."""
 
-    # MIN_SPEED: int = 15       # Minnsti hraði sem er hægt að senda á mótora
-    # MAX_SPEED: int = 255      # Mesti hraði sem er hægt að senda á mótora
     speed: Speed | None = None  # Valinn hraði
-
+    
     while speed is None:
         try:
             speed = Speed(input("Veldu nýjann hraða á bilinu [15 til 255]: "))
-
-            # if not (MIN_SPEED <= speed <= MAX_SPEED):
-            #     speed = None
-            #     print("Ógildur hraði valinn. Bilið er [15 til 255].")
-        
+    
         except ValueError as _e:
             speed = None
             print(f"Ógildur hraði sleginn inn. {_e}.")
@@ -119,17 +113,11 @@ def get_new_speed() -> Speed:
 def get_new_turn() -> TurnStage:
     """Spyr notanda um nýtt beygju skref."""
 
-# //    MIN_TURN: int = -1       # Minnsta beygja sem er hægt að taka
-# //    MAX_TURN: int = 3        # Mesta beygja sem er hægt að taka
     turn: TurnStage | None = None  # Sjálfgefið beygju skref
 
     while turn is None:
         try:
             turn = TurnStage(input("Veldu nýtt beygju skref á bilinu [-1 til 3]: "))
-
-# //              if not (MIN_TURN <= turn <= MAX_TURN):
-# //                  turn = None
-# //                  print("Ógilt beygju skref valið. Bilið er [-1 til 3].")
         
         except ValueError as _e:
             turn = None
