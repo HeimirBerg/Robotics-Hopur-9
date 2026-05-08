@@ -1,5 +1,5 @@
 from lidarprufa import start_lidar, stop_lidar, get_distance, get_scan_snapshot, MAX_RANGE
-from hreyfing import *
+from movement import *
 
 import time
 import math
@@ -106,9 +106,9 @@ def align_to_gap(turn_dir):
     SETTLE_MS      = 0.4  # seconds stationary before reading
 
     for step in range(80):  # max ~80 steps ≈ full rotation
-        beygja(turn_dir, ALIGN_SPEED, -ALIGN_SPEED)
+        turn(turn_dir, ALIGN_SPEED, -ALIGN_SPEED)
         time.sleep(TURN_MS)
-        stoppa()
+        stop()
         time.sleep(SETTLE_MS)
 
         front = get_distance(300, 60)
@@ -138,21 +138,21 @@ def escape_stuck(left, right):
         if get_distance(300, 60) > turn_distance:
             print("Found way out during spin.")
             return
-        beygja(turn_dir, speed, -speed)
+        turn(turn_dir, speed, -speed)
         time.sleep(0.1)
 
     # --- Phase 2: stop, scan clean, align step by step ---
     print("Still stuck after 3s — stopping for clean scan...")
-    stoppa()
+    stop()
     time.sleep(1.0)  # let LiDAR settle while stationary
 
     # Back up if there's room behind
     rear = get_distance(135, 225)
     if rear > 40:
         print(f"Backing up (rear: {rear:.0f}cm)...")
-        fara_aftur(speed)
+        reverse(speed)
         time.sleep(0.5)
-        stoppa()
+        stop()
         time.sleep(1.0)  # settle again
     else:
         print(f"Rear blocked ({rear:.0f}cm), skipping backup.")
@@ -192,7 +192,7 @@ def autopilot():
                 escape_stuck(left, right)
 
             elif front > turn_distance:
-                fara_afram(speed)
+                forward(speed)
 
             elif front > stop_distance:
                 # ratio: 1.0 when far away, 0.0 when at stop_distance
@@ -205,15 +205,15 @@ def autopilot():
                 inner = int(speed * ratio * ratio)
 
                 if left > right:
-                    beygja("Vinstri", outer, inner)
+                    turn("Vinstri", outer, inner)
                 else:
-                    beygja("Hægri", outer, inner)
+                    turn("Hægri", outer, inner)
 
             else:
                 turn_dir = "Vinstri" if left > right else "Hægri"
                 print(f"Too close! Spinning {turn_dir}...")
                 while get_distance(300, 60) <= stop_distance:
-                    beygja(turn_dir, speed, 0)
+                    turn(turn_dir, speed, 0)
                     time.sleep(0.1)
 
             time.sleep(0.1)
