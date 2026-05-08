@@ -12,8 +12,8 @@ def rtonn():
 x = input("Veldu 1 eða 2 fyrir valið eða handahófskennt")
 if x == "1":
     lag = input("Veldu lag")
-    tonlist(lag)
+    print(tonlist(lag))
 elif x == "2":
-    rtonn()
+    print(rtonn())
 else:
     print("Veldu eitthvað annað")
