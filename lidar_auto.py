@@ -145,7 +145,7 @@ def autopilot():
 
     try:
         while True:
-            front = get_distance(300, 60)
+            front = get_distance(330, 30)   # narrow ±30° cone — ignores side walls
             right = get_distance(45, 135)
             left  = get_distance(225, 315)
 
