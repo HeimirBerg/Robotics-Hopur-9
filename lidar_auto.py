@@ -1,4 +1,4 @@
-from lidarprufa import start_lidar, stop_lidar, get_distance, get_scan_snapshot, clear_scan_data, MAX_RANGE
+from lidarprufa import start_lidar, stop_lidar, get_distance, get_scan_snapshot, MAX_RANGE
 from hreyfing import *
 
 import time
@@ -96,27 +96,22 @@ def find_escape_heading(snapshot):
     return (best_heading, best_direction) if best_heading is not None else None
 
 
-def fresh_front():
-    """Clear stale scan data, wait for a full fresh rotation, return front distance."""
-    clear_scan_data()
-    time.sleep(0.8)  # S2L does ~10 rotations/s — 0.8s gives ~8 fresh sweeps
-    return get_distance(300, 60)
-
-
 def align_to_gap(turn_dir):
     """
-    Turn in small steps. After each step, flush stale data and read fresh front.
-    Stops as soon as front is clear, or after one full rotation (~24 steps).
+    Turn in small steps, stopping briefly after each to let the scan settle.
+    Returns True as soon as the front reads clear, False if it never does.
     """
-    ALIGN_SPEED = 80    # slow for precision
-    TURN_MS     = 0.15  # how long to spin per step (~15° at this speed)
+    ALIGN_SPEED    = 80   # slower for precision
+    TURN_MS        = 0.15 # seconds spinning per step
+    SETTLE_MS      = 0.4  # seconds stationary before reading
 
-    for step in range(24):  # 24 steps ≈ full 360°
+    for step in range(80):  # max ~80 steps ≈ full rotation
         beygja(turn_dir, ALIGN_SPEED, -ALIGN_SPEED)
         time.sleep(TURN_MS)
         stoppa()
+        time.sleep(SETTLE_MS)
 
-        front = fresh_front()
+        front = get_distance(300, 60)
         print(f"  Align step {step+1}: front={front:.0f}cm")
 
         if front > turn_distance:
@@ -129,63 +124,51 @@ def align_to_gap(turn_dir):
 
 def escape_stuck(left, right):
     """
-    Phase 1: Spin freely for up to 3 seconds.
-    Phase 2: Stop, flush stale data, back up if safe, find best gap,
-             then align with step-and-check turns.
+    Phase 1: Spin freely for up to 3 seconds — maybe that's enough.
+    Phase 2: Stop, back up if safe, take a clean stationary scan,
+             then align precisely using step-and-check turns.
     """
     recent_fronts.clear()
 
-    # --- Phase 1: quick spin ---
+    # --- Phase 1: quick spin attempt ---
     print("Stuck! Spinning to find a way out...")
     turn_dir = "Vinstri" if left > right else "Hægri"
     deadline = time.time() + 3.0
     while time.time() < deadline:
+        if get_distance(300, 60) > turn_distance:
+            print("Found way out during spin.")
+            return
         beygja(turn_dir, speed, -speed)
         time.sleep(0.1)
-        # Check with fresh data every ~0.5s during spin
-        if (time.time() % 0.5) < 0.1:
-            stoppa()
-            if fresh_front() > turn_distance:
-                print("Found way out during spin.")
-                return
-            beygja(turn_dir, speed, -speed)
 
-    # --- Phase 2: clean scan + step-by-step alignment ---
-    print("Still stuck after 3s — getting clean scan...")
+    # --- Phase 2: stop, scan clean, align step by step ---
+    print("Still stuck after 3s — stopping for clean scan...")
     stoppa()
+    time.sleep(1.0)  # let LiDAR settle while stationary
 
-    # Flush spin-corrupted data and wait for a fresh map
-    front = fresh_front()
-    if front > turn_distance:
-        print("Front cleared after stopping.")
-        return
-
-    # Back up if safe
+    # Back up if there's room behind
     rear = get_distance(135, 225)
     if rear > 40:
         print(f"Backing up (rear: {rear:.0f}cm)...")
         fara_aftur(speed)
         time.sleep(0.5)
         stoppa()
-        front = fresh_front()
-        if front > turn_distance:
-            print("Front cleared after backup.")
-            return
+        time.sleep(1.0)  # settle again
     else:
         print(f"Rear blocked ({rear:.0f}cm), skipping backup.")
 
-    # Find best gap from clean snapshot
+    # Take a clean stationary snapshot and find best escape direction
     print("Analyzing 360° scan...")
     snapshot = get_scan_snapshot()
     result   = find_escape_heading(snapshot)
 
     if result is None:
-        print("No suitable gap — falling back to open side.")
+        print("No suitable gap found — falling back to open side.")
         turn_dir = "Vinstri" if left > right else "Hægri"
     else:
         _, turn_dir = result
 
-    print(f"Aligning toward gap ({turn_dir})...")
+    print(f"Aligning toward gap ({turn_dir}) — step-and-check mode...")
     align_to_gap(turn_dir)
     print("Escape complete.")
 
