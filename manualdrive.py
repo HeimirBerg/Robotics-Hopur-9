@@ -113,7 +113,7 @@ def keyboard_control(device_path: str) -> None:
 
                     elif key.keycode == "KEY_SPACE":
                         m.stop()
-                        print(f"=== Hætti í keyrslu ===\n{"Bless, bless...":^23}")
+                        print(f"\n=== Hætti í keyrslu ===\n{"Bless, bless...":^23}\n")
                         return
 
                 # Þegar takka er sleppt
@@ -126,7 +126,7 @@ def keyboard_control(device_path: str) -> None:
     # Önnur leið til að hætta í keyrslu og forriti
     except KeyboardInterrupt:
         m.stop()
-        print(f"=== Hætti í keyrslu ===")
+        print(f"\n=== Hætti í keyrslu ===\n")
         return
 
 
