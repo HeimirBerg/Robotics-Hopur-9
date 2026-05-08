@@ -160,13 +160,22 @@ def autopilot():
                 forward(speed)
 
             else:
-                # Obstacle ahead — stop, scan 360°, spin to most open direction
+                # Obstacle ahead — scan, turn to best heading, drive forward
                 print(f"Obstacle at {front:.0f}cm — scanning for best heading...")
                 stop()
                 time.sleep(0.3)
                 snapshot = get_scan_snapshot()
                 heading, turn_dir = find_escape_heading(snapshot)
                 spin_to_heading(heading, turn_dir)
+                # Drive forward until something is actually close — don't return
+                # to the main loop or it'll immediately re-trigger this block
+                deadline = time.time() + 2.0
+                while time.time() < deadline:
+                    if get_distance(345, 15) <= stop_distance:
+                        break
+                    forward(speed)
+                    time.sleep(0.05)
+                stop()
 
             time.sleep(0.1)
 
