@@ -137,6 +137,8 @@ def escape_stuck(left, right):
     while time.time() < deadline:
         if get_distance(300, 60) > turn_distance:
             print("Found way out during spin.")
+            stop()
+            time.sleep(0.3)  # let robot fully stop before handing back to main loop
             return
         turn(turn_dir, speed, -speed)
         time.sleep(0.1)
