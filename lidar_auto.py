@@ -39,11 +39,21 @@ def autopilot():
             if is_stuck():
                 print("Stuck! Turning around...")
                 recent_fronts.clear()
-                fara_aftur(speed)
-                time.sleep(0.8)
+
+                # Back up only if there's room behind
+                rear = get_distance(135, 225)
+                if rear > 40:
+                    print(f"Backing up (rear clear: {rear:.0f}cm)...")
+                    fara_aftur(speed)
+                    time.sleep(0.5)
+                else:
+                    print(f"Rear too close ({rear:.0f}cm), skipping backup.")
+
+                # Spin in place — both wheels opposite directions
                 turn_dir = "Vinstri" if left > right else "Hægri"
+                print(f"Spinning {turn_dir}...")
                 while get_distance(300, 60) <= turn_distance:
-                    beygja(turn_dir, speed, 0)
+                    beygja(turn_dir, speed, -speed)
                     time.sleep(0.1)
                 print("Stuck resolved.")
 
