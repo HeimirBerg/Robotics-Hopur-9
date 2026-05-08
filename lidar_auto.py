@@ -96,11 +96,37 @@ def find_escape_heading(snapshot):
     return (best_heading, best_direction) if best_heading is not None else None
 
 
+def align_to_gap(turn_dir):
+    """
+    Turn in small steps, stopping briefly after each to let the scan settle.
+    Returns True as soon as the front reads clear, False if it never does.
+    """
+    ALIGN_SPEED    = 80   # slower for precision
+    TURN_MS        = 0.15 # seconds spinning per step
+    SETTLE_MS      = 0.4  # seconds stationary before reading
+
+    for step in range(80):  # max ~80 steps ≈ full rotation
+        beygja(turn_dir, ALIGN_SPEED, -ALIGN_SPEED)
+        time.sleep(TURN_MS)
+        stoppa()
+        time.sleep(SETTLE_MS)
+
+        front = get_distance(300, 60)
+        print(f"  Align step {step+1}: front={front:.0f}cm")
+
+        if front > turn_distance:
+            print("Aligned — front is clear!")
+            return True
+
+    print("Could not align after full rotation.")
+    return False
+
+
 def escape_stuck(left, right):
     """
     Phase 1: Spin freely for up to 3 seconds — maybe that's enough.
-    Phase 2: If still stuck, stop completely, wait for scan to settle,
-             analyze 360° and turn toward the best gap.
+    Phase 2: Stop, back up if safe, take a clean stationary scan,
+             then align precisely using step-and-check turns.
     """
     recent_fronts.clear()
 
@@ -115,10 +141,10 @@ def escape_stuck(left, right):
         beygja(turn_dir, speed, -speed)
         time.sleep(0.1)
 
-    # --- Phase 2: stop, scan clean, then turn toward best gap ---
-    print("Still stuck after 3s — stopping to get a clean scan...")
+    # --- Phase 2: stop, scan clean, align step by step ---
+    print("Still stuck after 3s — stopping for clean scan...")
     stoppa()
-    time.sleep(1.0)  # let the LiDAR settle while stationary
+    time.sleep(1.0)  # let LiDAR settle while stationary
 
     # Back up if there's room behind
     rear = get_distance(135, 225)
@@ -127,11 +153,11 @@ def escape_stuck(left, right):
         fara_aftur(speed)
         time.sleep(0.5)
         stoppa()
-        time.sleep(1.0)  # settle again after moving
+        time.sleep(1.0)  # settle again
     else:
         print(f"Rear blocked ({rear:.0f}cm), skipping backup.")
 
-    # Take a clean stationary snapshot and find best gap
+    # Take a clean stationary snapshot and find best escape direction
     print("Analyzing 360° scan...")
     snapshot = get_scan_snapshot()
     result   = find_escape_heading(snapshot)
@@ -142,11 +168,8 @@ def escape_stuck(left, right):
     else:
         _, turn_dir = result
 
-    print(f"Turning {turn_dir} toward gap...")
-    while get_distance(300, 60) <= turn_distance:
-        beygja(turn_dir, speed, -speed)
-        time.sleep(0.1)
-
+    print(f"Aligning toward gap ({turn_dir}) — step-and-check mode...")
+    align_to_gap(turn_dir)
     print("Escape complete.")
 
 
