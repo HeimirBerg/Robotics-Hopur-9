@@ -159,23 +159,20 @@ def autopilot():
             elif front > turn_distance:
                 forward(speed)
 
+            elif front > stop_distance:
+                # Gradually curve away from the obstacle toward the more open side
+                ratio = (front - stop_distance) / (turn_distance - stop_distance)
+                outer = int(speed * (0.5 + 0.5 * ratio))
+                inner = int(speed * ratio * ratio)
+                if left > right:
+                    turn("Vinstri", outer, inner)
+                else:
+                    turn("Hægri", outer, inner)
+
             else:
-                # Obstacle ahead — scan, turn to best heading, drive forward
-                print(f"Obstacle at {front:.0f}cm — scanning for best heading...")
-                stop()
-                time.sleep(0.3)
-                snapshot = get_scan_snapshot()
-                heading, turn_dir = find_escape_heading(snapshot)
-                spin_to_heading(heading, turn_dir)
-                # Drive forward until something is actually close — don't return
-                # to the main loop or it'll immediately re-trigger this block
-                deadline = time.time() + 2.0
-                while time.time() < deadline:
-                    if get_distance(345, 15) <= stop_distance:
-                        break
-                    forward(speed)
-                    time.sleep(0.05)
-                stop()
+                # Critically close — scan, spin to best heading, drive out
+                print(f"Too close ({front:.0f}cm) — scanning for best heading...")
+                escape_stuck(left, right)
 
             time.sleep(0.1)
 
