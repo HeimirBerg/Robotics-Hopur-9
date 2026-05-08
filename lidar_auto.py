@@ -117,8 +117,8 @@ def escape_stuck(left, right):
     heading, turn_dir = find_escape_heading(snapshot)
     spin_to_heading(heading, turn_dir)
 
-    # Verify front is actually clear — if not, stop and let the main loop retry
-    front = get_distance(300, 60)
+    # Verify narrow front is actually clear — if not, stop and let the main loop retry
+    front = get_distance(330, 30)
     print(f"  Post-spin front: {front:.0f}cm")
     if front <= turn_distance:
         print("  Front still blocked after spin — stopping, will retry.")
@@ -126,12 +126,11 @@ def escape_stuck(left, right):
         return
 
     # Drive straight until a new obstacle comes into range, ignoring side sensors.
-    # This prevents the normal avoidance logic from steering back into the wall
-    # while the robot is still in the tight space.
+    # Uses narrow sensor so side walls don't abort the exit drive early.
     print("  Driving straight to clear the area...")
     deadline = time.time() + 2.0   # safety cap — max 2 s of straight driving
     while time.time() < deadline:
-        if get_distance(300, 60) <= turn_distance:
+        if get_distance(330, 30) <= turn_distance:
             break
         forward(speed)
         time.sleep(0.05)
@@ -176,11 +175,8 @@ def autopilot():
                     turn("Hægri", outer, inner)
 
             else:
-                turn_dir = "Vinstri" if left > right else "Hægri"
-                print(f"Too close! Spinning {turn_dir}...")
-                while get_distance(300, 60) <= stop_distance:
-                    turn(turn_dir, speed, 0)
-                    time.sleep(0.1)
+                print("Too close! Triggering escape...")
+                escape_stuck(left, right)
 
             time.sleep(0.1)
 
