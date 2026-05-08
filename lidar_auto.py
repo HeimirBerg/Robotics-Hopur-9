@@ -118,7 +118,7 @@ def escape_stuck(left, right):
     spin_to_heading(heading, turn_dir)
 
     # Verify narrow front is actually clear — if not, stop and let the main loop retry
-    front = get_distance(330, 30)
+    front = get_distance(345, 15)
     print(f"  Post-spin front: {front:.0f}cm")
     if front <= turn_distance:
         print("  Front still blocked after spin — stopping, will retry.")
@@ -130,7 +130,7 @@ def escape_stuck(left, right):
     print("  Driving straight to clear the area...")
     deadline = time.time() + 2.0   # safety cap — max 2 s of straight driving
     while time.time() < deadline:
-        if get_distance(330, 30) <= turn_distance:
+        if get_distance(345, 15) <= turn_distance:
             break
         forward(speed)
         time.sleep(0.05)
@@ -144,7 +144,7 @@ def autopilot():
 
     try:
         while True:
-            front = get_distance(330, 30)   # narrow ±30° cone — ignores side walls
+            front = get_distance(345, 15)   # tight ±15° cone — only dead ahead
             right = get_distance(45, 135)
             left  = get_distance(225, 315)
 
