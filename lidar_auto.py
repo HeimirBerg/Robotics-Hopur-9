@@ -97,34 +97,52 @@ def find_escape_heading(snapshot):
 
 
 def escape_stuck(left, right):
-    """Back up if safe, then spin toward the best escape gap."""
+    """
+    Phase 1: Spin freely for up to 3 seconds — maybe that's enough.
+    Phase 2: If still stuck, stop completely, wait for scan to settle,
+             analyze 360° and turn toward the best gap.
+    """
     recent_fronts.clear()
-    stoppa()
-    time.sleep(0.1)
 
-    # Check rear clearance before reversing
+    # --- Phase 1: quick spin attempt ---
+    print("Stuck! Spinning to find a way out...")
+    turn_dir = "Vinstri" if left > right else "Hægri"
+    deadline = time.time() + 3.0
+    while time.time() < deadline:
+        if get_distance(300, 60) > turn_distance:
+            print("Found way out during spin.")
+            return
+        beygja(turn_dir, speed, -speed)
+        time.sleep(0.1)
+
+    # --- Phase 2: stop, scan clean, then turn toward best gap ---
+    print("Still stuck after 3s — stopping to get a clean scan...")
+    stoppa()
+    time.sleep(1.0)  # let the LiDAR settle while stationary
+
+    # Back up if there's room behind
     rear = get_distance(135, 225)
     if rear > 40:
         print(f"Backing up (rear: {rear:.0f}cm)...")
         fara_aftur(speed)
         time.sleep(0.5)
         stoppa()
-        time.sleep(0.1)
+        time.sleep(1.0)  # settle again after moving
     else:
         print(f"Rear blocked ({rear:.0f}cm), skipping backup.")
 
-    # Full 360° scan to find the best way out
+    # Take a clean stationary snapshot and find best gap
+    print("Analyzing 360° scan...")
     snapshot = get_scan_snapshot()
     result   = find_escape_heading(snapshot)
 
     if result is None:
-        # No usable gap — fall back to spinning toward the more open side
-        print("Fallback: spinning toward more open side.")
+        print("No suitable gap found — falling back to open side.")
         turn_dir = "Vinstri" if left > right else "Hægri"
     else:
         _, turn_dir = result
 
-    print(f"Spinning {turn_dir} until front clears...")
+    print(f"Turning {turn_dir} toward gap...")
     while get_distance(300, 60) <= turn_distance:
         beygja(turn_dir, speed, -speed)
         time.sleep(0.1)
