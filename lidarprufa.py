@@ -81,6 +81,12 @@ def get_scan_snapshot():
         return dict(_scan_data)
 
 
+def clear_scan_data():
+    """Flush all cached readings. Fresh data arrives within one LiDAR rotation."""
+    with _lock:
+        _scan_data.clear()
+
+
 def get_distance(start_angle, end_angle):
     """Return the nearest obstacle (cm) in a degree sector."""
     with _lock:
