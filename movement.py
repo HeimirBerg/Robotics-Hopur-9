@@ -59,7 +59,7 @@ def forward(speed: int) -> None:
 
 
 def reverse(speed: int) -> None:
-    """Keyrir aftur"""
+    """Bakkar"""
     vel = int(speed)
     send_speeds(-vel, -vel)
 
