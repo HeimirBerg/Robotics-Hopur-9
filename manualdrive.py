@@ -31,28 +31,33 @@ def find_input_devices() -> None:
         print("====== BÚINN ======\n")
 
 
-def select_input_device(device_name: str) -> str | None:
+def select_input_device() -> tuple[str, str]:
     """
     Leitar að möppu slóðinni fyrir valið tæki (lyklaborði/fjarstýringu).
 
-    :input_name: Hluti af nafni tækis, t.d. Dell eða Keyboard (Nöfn sjást með fallinu `find_input_devices`).
-    :return: Slóð á völdu inntakstæki. Ef tækið finnst ekki er skilað `None`.
+    :return: Nafn og slóð á valið tæki.
     """
 
-    try:
-        devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
-
-        for device in devices:
-            if device_name.lower() in device.name.lower():
-                return device.path
-        
-        # Prentar aðeins ef for-lykkja klárast án þess að skila slóð
-        print("Fann ekki tækið sem þú leitaðir að.\n")
-        return None
+    name: str | None = None
+    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
     
-    except ValueError:
-        print("Ógilt nafn slegið inn. Þarf að vera strengur.\n")
-        return None
+    while name is None:
+        try:
+            name = input("Sláðu inn nafn eða slóð lyklaborðs eða fjarstýringar: ")
+
+            for device in devices:
+                if name.lower() in device.name.lower():
+                    return device.name, device.path
+                elif name.lower() in device.path.lower(): 
+                    return device.name, device.path
+            
+            # Prentar aðeins ef for-lykkja klárast án þess að skila slóð
+            name = None
+            print("Fann ekki tækið sem þú leitaðir að.\n")
+        
+        except ValueError:
+            name = None
+            print("Ógilt nafn slegið inn. Þarf að vera strengur.\n")
 
 
 def keyboard_control(device_path: str) -> None:
@@ -135,18 +140,14 @@ def ps5_control(device_path: str) -> None:
 
 def manual() -> None:
     """Keyrir handvirka keyrslu, föll og virkni."""
-
-    input_name: str = ""
-    input_path: str | None = None 
     
     # Prenta tiltæk tæki.
     find_input_devices()
 
-    while input_path is None:
-        input_name = input("Sláðu inn nafn lyklaborðs eða fjarstýringar: ")
-        input_path = select_input_device(input_name)
+    # Vel inntak
+    input_name, input_path = select_input_device()
 
-    if "ps" in input_name.lower():  # ? Á kannski eftir að breytast
+    if "controller" in input_name.lower():  # ? Á kannski eftir að breytast
         ps5_control(input_path)
     else:
         keyboard_control(input_path)
