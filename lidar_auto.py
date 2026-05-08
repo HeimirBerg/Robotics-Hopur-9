@@ -159,24 +159,14 @@ def autopilot():
             elif front > turn_distance:
                 forward(speed)
 
-            elif front > stop_distance:
-                # ratio: 1.0 when far away, 0.0 when at stop_distance
-                ratio = (front - stop_distance) / (turn_distance - stop_distance)
-
-                # Outer wheel slows down as obstacle gets closer
-                outer = int(speed * (0.5 + 0.5 * ratio))
-
-                # Inner wheel slows much more — tighter curve when close
-                inner = int(speed * ratio * ratio)
-
-                if left > right:
-                    turn("Vinstri", outer, inner)
-                else:
-                    turn("Hægri", outer, inner)
-
             else:
-                print("Too close! Triggering escape...")
-                escape_stuck(left, right)
+                # Obstacle ahead — stop, scan 360°, spin to most open direction
+                print(f"Obstacle at {front:.0f}cm — scanning for best heading...")
+                stop()
+                time.sleep(0.3)
+                snapshot = get_scan_snapshot()
+                heading, turn_dir = find_escape_heading(snapshot)
+                spin_to_heading(heading, turn_dir)
 
             time.sleep(0.1)
 
