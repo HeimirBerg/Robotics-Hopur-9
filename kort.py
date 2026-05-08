@@ -1,16 +1,16 @@
 # Gerum forrit svo bíllinn ratar eitthvert
 import time
-from hreyfing import *
+from movement import *
 
 def tiusent():
-    senda(255, -255) ## 10cm
+    send_speeds(255, 255) ## 10cm
     time.sleep(0.25)
-    stoppa()
+    stop()
 
 def snua(): ## 90 gradur
-    senda(255, 255)
+    send_speeds(255, 255)
     time.sleep(0.405)
-    stoppa()
+    stop()
 
 while True:
     x = input("Hvað á að gera? ")

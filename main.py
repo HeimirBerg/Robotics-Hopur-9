@@ -1,5 +1,6 @@
-from modules.manualdrive import manual
+from manualdrive import manual
 from lidar_auto import *
+from movement import stop
 
 try:
     while True:
@@ -18,10 +19,10 @@ try:
         elif adalval == 2:
             manual()
         elif adalval == 3:
-            stoppa()
+            stop()
             break
         else:
             print("Vinsamlegast veldu gildandi tölu")
 except KeyboardInterrupt:
-    stoppa()
+    stop()
     print("\n-------- Ó fokk --------")
