@@ -7,4 +7,13 @@ def tonlist(skra):
 tonar = ["guiltynigga.mp3", "baciate.mp3", "barbie.mp3", "Adolf Hitler Speech in 1935.mp3"]
 
 def rtonn():
-    return random.choice(tonar)
+    tonlist(random.choice(tonar))
+
+x = input("Veldu 1 eða 2 fyrir valið eða handahófskennt")
+if x == "1":
+    lag = input("Veldu lag")
+    tonlist(lag)
+elif x == "2":
+    rtonn()
+else:
+    print("Veldu eitthvað annað")
