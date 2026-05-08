@@ -5,7 +5,7 @@ from pyrplidar import PyRPlidar # type: ignore
 # --- Configuration ---
 LIDAR_PORT = "/dev/ttyUSB0"
 BAUDRATE   = 1000000
-MAX_RANGE  = 800   # cm — ignore anything beyond this
+MAX_RANGE  = 300   # cm — ignore anything beyond this
 
 # --- Shared scan data ---
 _scan_data = {}   # angle(int) -> distance(cm)
@@ -24,7 +24,18 @@ def _scan_worker():
         # flush leftover reset bytes from buffer
         lidar.lidar_serial._serial.reset_input_buffer()
 
-        scan_gen = lidar.start_scan()
+        # retry start_scan until it succeeds
+        scan_gen = None
+        for attempt in range(100):
+            try:
+                scan_gen = lidar.start_scan()
+                print(f"Scan started on attempt {attempt + 1}")
+                break
+            except Exception:
+                time.sleep(0.05)
+
+        if scan_gen is None:
+            raise Exception("Could not start scan after 100 attempts")
 
         for scan in scan_gen():
             if not _running:
@@ -75,4 +86,4 @@ def get_distance(start_angle, end_angle):
         # wraps around 0 degrees (e.g. 315 -> 15)
         values = [v for k, v in data.items() if k >= start_angle or k <= end_angle]
 
-    return min(values) if values else 0
+    return min(values) if values else MAX_RANGE

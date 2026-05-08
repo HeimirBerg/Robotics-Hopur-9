@@ -17,6 +17,8 @@ recent_fronts = deque(maxlen=STUCK_TIME)
 def is_stuck():
     if len(recent_fronts) < STUCK_TIME:
         return False
+    if min(recent_fronts) > turn_distance:  # all readings clear — not stuck
+        return False
     return max(recent_fronts) - min(recent_fronts) < STUCK_THRESHOLD
 
 
