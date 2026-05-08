@@ -9,16 +9,11 @@ velur sjálfvirkt hvaða keyrslu fall á að nota.
 import evdev # type: ignore
 import time
 
-import hreyfing as m
+import movement as m
 
 
-MIN_SPEED: int =   15  # Minnsti hraði sem er hægt að senda á mótora
-MAX_SPEED: int =  255  # Mesti hraði sem er hægt að senda á mótora
-MIN_TURN: int =    -1  # Minnsta beygja sem er hægt að taka
-MAX_TURN: int =     3  # Mesta beygja sem er hægt að taka
 SPEED_BOOST: int = 50  # Hraði sem er bætt við þegar takka hefur verið haldi í biðtíma
-WAIT_TIME_1: int =  3  # [s]
-WAIT_TIME_2: int = 10  # [s]
+WAIT_TIMES: tuple[int, int] =  (3, 10)  # [s]
 
 
 def find_input_devices() -> None:
@@ -60,77 +55,6 @@ def select_input_device(device_name: str) -> str | None:
         return None
 
 
-def calculate_boosts(reference_time: float, init_speed: int, init_turn: int) -> tuple[int, int]:
-    """
-    Reiknar aukinn hraða og beygju hraða eftir ákveðna seinkun.
-    
-    :reference_time: Viðmiðunar tími í reikningum.
-    :init_speed: Upphafs hraði.
-    :init_turn: Upphafs beygju stig.
-    :return: Útreiknaður hraði og beygju skref í túplu.
-    """
-
-    # Hjálpar fall til að losna við if setningar
-    def clamp(low, value, high):
-        """Klemmir gildi á milli `low` (MIN) og `high` (MAX)."""
-        return max(low, min(value, high))
-
-    # Tími liðinn frá því fyrsta takka var ýtt niður.
-    elapsed_time: float = time.time() - reference_time
-
-    if elapsed_time >= WAIT_TIME_2:
-        speed = clamp(MIN_SPEED, (init_speed + (SPEED_BOOST * 2)), MAX_SPEED)
-        turn = clamp(MIN_TURN, (init_turn + 2), MAX_TURN)
-
-    elif elapsed_time >= WAIT_TIME_1:
-        speed = clamp(MIN_SPEED, (init_speed + SPEED_BOOST), MAX_SPEED)
-        turn = clamp(MIN_TURN, (init_turn + 1), MAX_TURN)
-
-    else:
-        speed = init_speed
-        turn = init_turn
-
-    return speed, turn
-
-
-def get_new_speed() -> int:
-    """Spyr notanda um nýjann hraða."""
-
-    speed: int | None = None
-    
-    while speed is None:
-        try:
-            speed = int(input("Veldu nýjann hraða á bilinu [15 til 255]: "))
-
-            if not (MIN_SPEED <= speed <= MAX_SPEED):
-                raise ValueError
-    
-        except ValueError:
-            speed = None
-            print(f"Ógildur hraði sleginn inn.")
-    
-    return speed
-
-
-def get_new_turn() -> int:
-    """Spyr notanda um nýtt beygju skref."""
-
-    turn: int | None = None
-
-    while turn is None:
-        try:
-            turn = int(input("Veldu nýtt beygju skref á bilinu [-1 til 3]: "))
-
-            if not (MIN_TURN <= turn <= MAX_TURN):
-                raise ValueError
-        
-        except ValueError:
-            turn = None
-            print(f"Ógilt beygju skref valið.")
-
-    return turn
-
-
 def keyboard_control(device_path: str) -> None:
     """Stýri- og keyrsluvirkni með lyklaborði."""
     
@@ -159,7 +83,7 @@ def keyboard_control(device_path: str) -> None:
                     keys_held.add(key.keycode)
 
                     # Reikna hraðana eftir seinkun
-                    speed, turn_stage = calculate_boosts(start_time, init_speed, init_turn_stage)
+                    speed, turn_stage = m.calculate_boosts(start_time, init_speed, init_turn_stage, SPEED_BOOST, WAIT_TIMES)
 
                     # Framkvæmi virkni eftir hvaða takka er ýtt niður, hef beygjur efst svo þær taki forgang.
                     if key.keycode in ("KEY_LEFT", "KEY_A"):
@@ -176,11 +100,11 @@ def keyboard_control(device_path: str) -> None:
 
                     elif key.keycode == "KEY_F":
                         m.stop()
-                        init_speed = get_new_speed()
+                        init_speed = m.get_new_speed()
 
                     elif key.keycode == "KEY_R":
                         m.stop()
-                        init_turn_stage = get_new_turn()
+                        init_turn_stage = m.get_new_turn_stage()
 
                     elif key.keycode == "KEY_SPACE":
                         m.stop()
