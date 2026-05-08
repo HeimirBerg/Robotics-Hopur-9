@@ -1,36 +1,50 @@
 import cv2
 from picamera2 import Picamera2
+from flask import Flask, Response
 
-
-# 1. Initialize Picamera2 (The "Brain")
+# 1. Setup Camera (No window will be opened)
+print("Initializing Camera...")
 picam2 = Picamera2()
-
-# 2. Configure the stream
-# This tells the ISP to turn the Raw Bayer into a standard image for us
 config = picam2.create_preview_configuration(main={"size": (640, 480)})
 picam2.configure(config)
-
-# 3. Start the camera
 picam2.start()
+print("Camera started successfully!")
 
-print("Camera Live! Press 'q' to quit.")
+app = Flask(__name__)
 
-try:
+def generate_frames():
     while True:
-        # Capture a frame into a format OpenCV understands (NumPy array)
+        # Capture frame
         frame = picam2.capture_array()
+        
+        # Convert to JPEG for the web
+        ret, buffer = cv2.imencode('.jpg', frame)
+        if not ret:
+            continue
+            
+        frame_bytes = buffer.tobytes()
 
-        # Display the frame in a window
-        cv2.imshow('Robotics-Hopur-9 Live Feed', frame)
+        # Yield the output in MJPEG format
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
-        # Stop if the user presses 'q'
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-except KeyboardInterrupt:
-    print("\nInterrupted by user.")
-finally:
-    # Always stop the hardware properly
-    picam2.stop()
-    cv2.destroyAllWindows()
-    
-app.run(host='0.0.0.0', port=80)
+@app.route('/')
+def index():
+    # Simple HTML page to display the stream
+    return "<html><body style='background:#222; color:white; text-align:center;'>" \
+           "<h1>Robotics-Hopur-9 Live</h1>" \
+           "<img src='/video_feed' style='border:2px solid red;'>" \
+           "</body></html>"
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(generate_frames(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+if __name__ == '__main__':
+    print("Web server launching at http://10.98.208.33:5000")
+    try:
+        # We use 0.0.0.0 to listen on all network interfaces
+        app.run(host='0.0.0.0', port=5000, threaded=True)
+    finally:
+        picam2.stop()
