@@ -13,9 +13,9 @@ from movement import drive, stop
 import time
 
 # Must match the value in lidar_auto.py
-SEC_PER_DEG_AT_255 = 1.0 / 123
+SEC_PER_DEG_AT_255 = 1.0 / 167.9
 
-TARGET_DEGREES = 180
+TARGET_DEGREES = 181
 duration = TARGET_DEGREES * SEC_PER_DEG_AT_255
 
 print(f"Spinning RIGHT {TARGET_DEGREES}° — calculated duration: {duration:.3f}s")
