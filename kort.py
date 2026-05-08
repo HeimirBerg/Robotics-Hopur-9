@@ -3,11 +3,11 @@ import time
 from movement import *
 
 def tiusent():
-    send_speeds(255, 255) ## 10cm
+    send_speeds(255, -255) ## 10cm
     time.sleep(0.25)
     stop()
 
-def snua(): ## 90 gradur
+def snua(): # 90 gradur
     send_speeds(255, 255)
     time.sleep(0.405)
     stop()
