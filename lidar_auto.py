@@ -117,8 +117,8 @@ def escape_stuck(left, right):
     heading, turn_dir = find_escape_heading(snapshot)
     spin_to_heading(heading, turn_dir)
 
-    # Verify front is actually clear — if not, stop and let the main loop retry
-    front = get_distance(300, 60)
+    # Verify narrow front is actually clear — if not, stop and let the main loop retry
+    front = get_distance(345, 15)
     print(f"  Post-spin front: {front:.0f}cm")
     if front <= turn_distance:
         print("  Front still blocked after spin — stopping, will retry.")
@@ -126,12 +126,11 @@ def escape_stuck(left, right):
         return
 
     # Drive straight until a new obstacle comes into range, ignoring side sensors.
-    # This prevents the normal avoidance logic from steering back into the wall
-    # while the robot is still in the tight space.
+    # Uses narrow sensor so side walls don't abort the exit drive early.
     print("  Driving straight to clear the area...")
     deadline = time.time() + 2.0   # safety cap — max 2 s of straight driving
     while time.time() < deadline:
-        if get_distance(300, 60) <= turn_distance:
+        if get_distance(345, 15) <= turn_distance:
             break
         forward(speed)
         time.sleep(0.05)
@@ -145,7 +144,7 @@ def autopilot():
 
     try:
         while True:
-            front = get_distance(300, 60)
+            front = get_distance(345, 15)   # tight ±15° cone — only dead ahead
             right = get_distance(45, 135)
             left  = get_distance(225, 315)
 
@@ -160,27 +159,14 @@ def autopilot():
             elif front > turn_distance:
                 forward(speed)
 
-            elif front > stop_distance:
-                # ratio: 1.0 when far away, 0.0 when at stop_distance
-                ratio = (front - stop_distance) / (turn_distance - stop_distance)
-
-                # Outer wheel slows down as obstacle gets closer
-                outer = int(speed * (0.5 + 0.5 * ratio))
-
-                # Inner wheel slows much more — tighter curve when close
-                inner = int(speed * ratio * ratio)
-
-                if left > right:
-                    turn("Vinstri", outer, inner)
-                else:
-                    turn("Hægri", outer, inner)
-
             else:
-                turn_dir = "Vinstri" if left > right else "Hægri"
-                print(f"Too close! Spinning {turn_dir}...")
-                while get_distance(300, 60) <= stop_distance:
-                    turn(turn_dir, speed, 0)
-                    time.sleep(0.1)
+                # Obstacle ahead — stop, scan 360°, spin to most open direction
+                print(f"Obstacle at {front:.0f}cm — scanning for best heading...")
+                stop()
+                time.sleep(0.3)
+                snapshot = get_scan_snapshot()
+                heading, turn_dir = find_escape_heading(snapshot)
+                spin_to_heading(heading, turn_dir)
 
             time.sleep(0.1)
 
