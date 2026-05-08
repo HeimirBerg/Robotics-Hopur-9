@@ -16,8 +16,11 @@ ROBOT_WIDTH     = 14.5  # cm — physical width of robot
 ESCAPE_MARGIN   = 10    # cm — extra clearance on each side when looking for a gap
 MIN_ESCAPE_DIST = 50    # cm — minimum distance to consider a direction clear
 
-# Calibration: spinning in place at speed 255 covers 90° in 0.405 s
-SEC_PER_DEG_AT_255 = 0.405 / 90   # seconds per degree at speed 255
+# Calibration: how long drive(255, dir, -1) takes to spin 1° in place.
+# To recalibrate: run drive(255, 4, -1) for exactly 1.0 s, measure the degrees
+# turned, then set SEC_PER_DEG_AT_255 = 1.0 / measured_degrees.
+# Current value is tuned for ~90° escape turns — adjust if over/under-shooting.
+SEC_PER_DEG_AT_255 = 1.0 / 123   # ≈ 123°/s measured with drive() spin-in-place
 
 recent_fronts = deque(maxlen=STUCK_TIME)
 
@@ -120,8 +123,20 @@ def escape_stuck(left, right):
     if front <= turn_distance:
         print("  Front still blocked after spin — stopping, will retry.")
         stop()
-    else:
-        print("  Front clear — escape complete.")
+        return
+
+    # Drive straight until a new obstacle comes into range, ignoring side sensors.
+    # This prevents the normal avoidance logic from steering back into the wall
+    # while the robot is still in the tight space.
+    print("  Driving straight to clear the area...")
+    deadline = time.time() + 2.0   # safety cap — max 2 s of straight driving
+    while time.time() < deadline:
+        if get_distance(300, 60) <= turn_distance:
+            break
+        forward(speed)
+        time.sleep(0.05)
+    stop()
+    print("  Escape complete.")
 
 
 def autopilot():
