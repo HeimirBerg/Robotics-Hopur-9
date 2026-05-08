@@ -5,7 +5,7 @@ import time
 from collections import deque
 
 # --- Fastar ---
-speed         = 100
+speed         = 150
 turn_distance = 80   # cm — start turning
 stop_distance = 20   # cm — stop and spin in place
 STUCK_THRESHOLD = 3  # cm — how little movement counts as stuck
@@ -40,7 +40,6 @@ def autopilot():
                 fara_aftur(speed)
                 time.sleep(0.8)
                 turn_dir = "Vinstri" if left > right else "Hægri"
-                # Keep turning until front is clear
                 while get_distance(300, 60) <= turn_distance:
                     beygja(turn_dir, speed, 0)
                     time.sleep(0.1)
@@ -50,16 +49,23 @@ def autopilot():
                 fara_afram(speed)
 
             elif front > stop_distance:
-                inner = int(speed * front / turn_distance)
+                # ratio: 1.0 when far away, 0.0 when at stop_distance
+                ratio = (front - stop_distance) / (turn_distance - stop_distance)
+
+                # Outer wheel slows down as obstacle gets closer
+                outer = int(speed * (0.5 + 0.5 * ratio))  # range: half speed → full speed
+
+                # Inner wheel slows much more — tighter curve when close
+                inner = int(speed * ratio * ratio)         # range: 0 → full speed
+
                 if left > right:
-                    beygja("Vinstri", speed, inner)
+                    beygja("Vinstri", outer, inner)
                 else:
-                    beygja("Hægri", speed, inner)
+                    beygja("Hægri", outer, inner)
 
             else:
                 turn_dir = "Vinstri" if left > right else "Hægri"
                 print(f"Too close! Spinning {turn_dir}...")
-                # Keep spinning until front is clear
                 while get_distance(300, 60) <= stop_distance:
                     beygja(turn_dir, speed, 0)
                     time.sleep(0.1)
