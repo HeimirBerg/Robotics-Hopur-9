@@ -9,9 +9,16 @@ velur sjálfvirkt hvaða keyrslu fall á að nota.
 import evdev # type: ignore
 import time
 
-from config import Speed, TurnStage
 import hreyfing as m
-# TODO: import movement as m
+
+
+MIN_SPEED: int =   15  # Minnsti hraði sem er hægt að senda á mótora
+MAX_SPEED: int =  255  # Mesti hraði sem er hægt að senda á mótora
+MIN_TURN: int =    -1  # Minnsta beygja sem er hægt að taka
+MAX_TURN: int =     3  # Mesta beygja sem er hægt að taka
+SPEED_BOOST: int = 50  # Hraði sem er bætt við þegar takka hefur verið haldi í biðtíma
+WAIT_TIME_1: int =  3  # [s]
+WAIT_TIME_2: int = 10  # [s]
 
 
 def find_input_devices() -> None:
@@ -53,7 +60,7 @@ def select_input_device(device_name: str) -> str | None:
         return None
 
 
-def calculate_speeds(reference_time: float, init_speed: Speed, init_turn: TurnStage) -> tuple[Speed, TurnStage]:
+def calculate_boosts(reference_time: float, init_speed: int, init_turn: int) -> tuple[int, int]:
     """
     Reiknar aukinn hraða og beygju hraða eftir ákveðna seinkun.
     
@@ -62,14 +69,6 @@ def calculate_speeds(reference_time: float, init_speed: Speed, init_turn: TurnSt
     :init_turn: Upphafs beygju stig.
     :return: Útreiknaður hraði og beygju skref í túplu.
     """
-
-    MIN_SPEED = Speed(15)   # Minnsti hraði sem er hægt að senda á mótora
-    MAX_SPEED = Speed(255)  # Mesti hraði sem er hægt að senda á mótora
-    MIN_TURN = TurnStage(-1)    # Minnsta beygja sem er hægt að taka
-    MAX_TURN = TurnStage(3)     # Mesta beygja sem er hægt að taka
-    SPEED_BOOST = Speed(50) # Hraði sem er bætt við þegar takka hefur verið haldi í biðtíma
-    WAIT_TIME_1: int = 3  # [s]
-    WAIT_TIME_2: int = 10 # [s]
 
     # Hjálpar fall til að losna við if setningar
     def clamp(low, value, high):
@@ -94,34 +93,40 @@ def calculate_speeds(reference_time: float, init_speed: Speed, init_turn: TurnSt
     return speed, turn
 
 
-def get_new_speed() -> Speed:
+def get_new_speed() -> int:
     """Spyr notanda um nýjann hraða."""
 
-    speed: Speed | None = None  # Valinn hraði
+    speed: int | None = None
     
     while speed is None:
         try:
-            speed = Speed(input("Veldu nýjann hraða á bilinu [15 til 255]: "))
+            speed = int(input("Veldu nýjann hraða á bilinu [15 til 255]: "))
+
+            if not (MIN_SPEED <= speed <= MAX_SPEED):
+                raise ValueError
     
-        except ValueError as _e:
+        except ValueError:
             speed = None
-            print(f"Ógildur hraði sleginn inn. {_e}.")
+            print(f"Ógildur hraði sleginn inn.")
     
     return speed
 
 
-def get_new_turn() -> TurnStage:
+def get_new_turn() -> int:
     """Spyr notanda um nýtt beygju skref."""
 
-    turn: TurnStage | None = None  # Sjálfgefið beygju skref
+    turn: int | None = None
 
     while turn is None:
         try:
-            turn = TurnStage(input("Veldu nýtt beygju skref á bilinu [-1 til 3]: "))
+            turn = int(input("Veldu nýtt beygju skref á bilinu [-1 til 3]: "))
+
+            if not (MIN_TURN <= turn <= MAX_TURN):
+                raise ValueError
         
-        except ValueError as _e:
+        except ValueError:
             turn = None
-            print(f"Ógilt beygju skref valið. {_e}.")
+            print(f"Ógilt beygju skref valið.")
 
     return turn
 
@@ -132,8 +137,8 @@ def keyboard_control(device_path: str) -> None:
     device = evdev.InputDevice(device_path) # Slóðin á lyklaborðið
 
     keys_held: set[str] = set() # Mengi með tökkum sem er haldið inni
-    init_speed = Speed(100)       # Upphafs/sjálfgefinn hraði [15 til 255]
-    init_turn_stage = TurnStage(0)    # Upphafs/sjálfgefinn beygju stig [-1 til 3]
+    init_speed: int = 100       # Upphafs/sjálfgefinn hraði [15 til 255]
+    init_turn_stage: int = 0    # Upphafs/sjálfgefinn beygju stig [-1 til 3]
     start_time: float = 0.0     # Tími tekinn þegar fyrsta takka er ýtt niður [s]
 
     print("=== Tilbúinn í keyrslu með lyklaborði ===")
@@ -154,7 +159,7 @@ def keyboard_control(device_path: str) -> None:
                     keys_held.add(key.keycode)
 
                     # Reikna hraðana eftir seinkun
-                    speed, turn_stage = calculate_speeds(start_time, init_speed, init_turn_stage)
+                    speed, turn_stage = calculate_boosts(start_time, init_speed, init_turn_stage)
 
                     # Framkvæmi virkni eftir hvaða takka er ýtt niður, hef beygjur efst svo þær taki forgang.
                     if key.keycode in ("KEY_LEFT", "KEY_A"):
@@ -192,13 +197,16 @@ def keyboard_control(device_path: str) -> None:
     # Önnur leið til að hætta í keyrslu og forriti
     except KeyboardInterrupt:
         m.stop()
-        print(f"=== Hætti í keyrslu ===\n{"Úps...":^23}")
+        print(f"=== Hætti í keyrslu ===")
         return
+
 
 # TODO: Á eftir að útfæra
 def ps5_control(device_path: str) -> None:
     """Stýri- og keyrsluvirkni með PlayStation fjarstýringu."""
     raise NotImplementedError
+
+    # Held að þetta verði bara eins og keyboard control nema með öðrum tökkum.
 
 
 def manual() -> None:
