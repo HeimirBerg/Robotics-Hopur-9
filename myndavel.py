@@ -1,34 +1,34 @@
 import cv2
 from picamera2 import Picamera2
 
-def mynd():
-    # 1. Initialize Picamera2 (The "Brain")
-    picam2 = Picamera2()
 
-    # 2. Configure the stream
-    # This tells the ISP to turn the Raw Bayer into a standard image for us
-    config = picam2.create_preview_configuration(main={"size": (640, 480)})
-    picam2.configure(config)
+# 1. Initialize Picamera2 (The "Brain")
+picam2 = Picamera2()
 
-    # 3. Start the camera
-    picam2.start()
+# 2. Configure the stream
+# This tells the ISP to turn the Raw Bayer into a standard image for us
+config = picam2.create_preview_configuration(main={"size": (640, 480)})
+picam2.configure(config)
 
-    print("Camera Live! Press 'q' to quit.")
+# 3. Start the camera
+picam2.start()
 
-    try:
-        while True:
-            # Capture a frame into a format OpenCV understands (NumPy array)
-            frame = picam2.capture_array()
+print("Camera Live! Press 'q' to quit.")
 
-            # Display the frame in a window
-            cv2.imshow('Robotics-Hopur-9 Live Feed', frame)
+try:
+    while True:
+        # Capture a frame into a format OpenCV understands (NumPy array)
+        frame = picam2.capture_array()
 
-            # Stop if the user presses 'q'
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-    except KeyboardInterrupt:
-        print("\nInterrupted by user.")
-    finally:
-        # Always stop the hardware properly
-        picam2.stop()
-        cv2.destroyAllWindows()
+        # Display the frame in a window
+        cv2.imshow('Robotics-Hopur-9 Live Feed', frame)
+
+        # Stop if the user presses 'q'
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+except KeyboardInterrupt:
+    print("\nInterrupted by user.")
+finally:
+    # Always stop the hardware properly
+    picam2.stop()
+    cv2.destroyAllWindows()
