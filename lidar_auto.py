@@ -32,71 +32,27 @@ def is_stuck():
 
 def find_escape_heading(snapshot):
     """
-    Scan all 360° and find the best heading to escape.
-    Returns (heading_angle, turn_direction) or None if no gap found.
+    Find the most open direction in a 360° scan.
 
-    A gap is valid if:
-      - All readings within it are >= MIN_ESCAPE_DIST
-      - Its physical width at the closest point fits the robot + margin
+    Smooths each angle over a ±15° window so LiDAR noise spikes don't
+    skew the result, then returns the angle with the highest average clearance.
+    Always returns a result — never None.
+
+    Returns (heading_angle, turn_direction).
     """
-    # Fill any missing angles with MAX_RANGE (open space)
     full = [snapshot.get(a, MAX_RANGE) for a in range(360)]
 
-    # Find contiguous clear sectors, handling wrap-around by doubling the list
-    clear = [d >= MIN_ESCAPE_DIST for d in full]
-    clear2 = clear * 2
+    WINDOW = 15   # degrees either side to average over
+    smoothed = [
+        sum(full[(a + i) % 360] for i in range(-WINDOW, WINDOW + 1)) / (2 * WINDOW + 1)
+        for a in range(360)
+    ]
 
-    gaps = []
-    i = 0
-    while i < 360:
-        if clear2[i]:
-            j = i
-            while j < i + 360 and clear2[j]:
-                j += 1
-            length = j - i
-            if length < 360:  # ignore if entire circle is clear (open field)
-                gaps.append((i % 360, length))
-            i = max(i + 1, j)
-        else:
-            i += 1
+    best_angle = max(range(360), key=lambda a: smoothed[a])
+    direction  = "Hægri" if 1 <= best_angle <= 179 else "Vinstri"
 
-    if not gaps:
-        print("No clear gaps found in 360° scan.")
-        return None
-
-    best_heading   = None
-    best_direction = None
-    best_score     = -1
-
-    for start, length in gaps:
-        center = (start + length // 2) % 360
-
-        # Minimum distance anywhere inside this gap
-        gap_angles = [(start + k) % 360 for k in range(length)]
-        min_dist   = min(full[a] for a in gap_angles)
-
-        # Physical width of the gap at that closest point (chord length formula)
-        phys_width = 2 * min_dist * math.sin(math.radians(length / 2))
-
-        needed = ROBOT_WIDTH + 2 * ESCAPE_MARGIN
-
-        print(f"  Gap: start={start}° span={length}° min_dist={min_dist:.0f}cm width={phys_width:.0f}cm (need {needed:.0f}cm)")
-
-        if phys_width >= needed:
-            # Score: prefer gaps that are far away and wide
-            score = min_dist * length
-            if score > best_score:
-                best_score     = score
-                best_heading   = center
-                # heading 1-179 = right side of robot, 181-359 = left side
-                best_direction = "Hægri" if 1 <= center <= 179 else "Vinstri"
-
-    if best_heading is not None:
-        print(f"Best escape: {best_heading}° → turn {best_direction}")
-    else:
-        print("No gap wide enough for the robot.")
-
-    return (best_heading, best_direction) if best_heading is not None else None
+    print(f"  Best escape heading: {best_angle}° ({smoothed[best_angle]:.0f}cm avg) → {direction}")
+    return best_angle, direction
 
 
 def spin_to_heading(heading, direction):
@@ -133,7 +89,8 @@ def spin_to_heading(heading, direction):
 def escape_stuck(left, right):
     """
     Stop, optionally back up, take a stationary 360° scan, calculate the
-    exact spin needed to face the best gap centre, then spin there.
+    exact spin needed to face the most open direction, then verify before
+    handing back to the main loop.
     """
     recent_fronts.clear()
 
@@ -152,19 +109,19 @@ def escape_stuck(left, right):
     else:
         print(f"Rear blocked ({rear:.0f}cm), skipping backup.")
 
-    # Find best gap from stationary scan and spin directly to it
-    snapshot = get_scan_snapshot()
-    result   = find_escape_heading(snapshot)
+    # Scan and spin to most open direction
+    snapshot         = get_scan_snapshot()
+    heading, turn_dir = find_escape_heading(snapshot)
+    spin_to_heading(heading, turn_dir)
 
-    if result is None:
-        print("No suitable gap found — turning 90° toward open side.")
-        turn_dir = "Vinstri" if left > right else "Hægri"
-        spin_to_heading(90, turn_dir)  # fallback: turn 90° toward open side
+    # Verify front is actually clear — if not, stop and let the main loop retry
+    front = get_distance(300, 60)
+    print(f"  Post-spin front: {front:.0f}cm")
+    if front <= turn_distance:
+        print("  Front still blocked after spin — stopping, will retry.")
+        stop()
     else:
-        heading, turn_dir = result
-        spin_to_heading(heading, turn_dir)
-
-    print("Escape complete.")
+        print("  Front clear — escape complete.")
 
 
 def autopilot():
