@@ -15,6 +15,7 @@ STUCK_TIME      = 15 # how many readings before declaring stuck
 ROBOT_WIDTH     = 14.5  # cm — physical width of robot
 ESCAPE_MARGIN   = 10    # cm — extra clearance on each side when looking for a gap
 MIN_ESCAPE_DIST = 50    # cm — minimum distance to consider a direction clear
+ESCAPE_SPEED    = 80    # cm — lower spin speed to avoid power brownout
 
 recent_fronts = deque(maxlen=STUCK_TIME)
 
@@ -140,7 +141,7 @@ def escape_stuck(left, right):
     turn_dir = "Vinstri" if left > right else "Hægri"
     deadline = time.time() + 3.0
     while time.time() < deadline:
-        beygja(turn_dir, speed, -speed)
+        beygja(turn_dir, ESCAPE_SPEED, -ESCAPE_SPEED)
         time.sleep(0.1)
         # Check with fresh data every ~0.5s during spin
         if (time.time() % 0.5) < 0.1:
@@ -148,7 +149,7 @@ def escape_stuck(left, right):
             if fresh_front() > turn_distance:
                 print("Found way out during spin.")
                 return
-            beygja(turn_dir, speed, -speed)
+            beygja(turn_dir, ESCAPE_SPEED, -ESCAPE_SPEED)
 
     # --- Phase 2: clean scan + step-by-step alignment ---
     print("Still stuck after 3s — getting clean scan...")
