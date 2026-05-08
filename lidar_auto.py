@@ -98,79 +98,92 @@ def find_escape_heading(snapshot):
 
 def align_to_gap(turn_dir):
     """
-    Turn in small steps, stopping briefly after each to let the scan settle.
-    Returns True as soon as the front reads clear, False if it never does.
-    """
-    ALIGN_SPEED    = 80   # slower for precision
-    TURN_MS        = 0.15 # seconds spinning per step
-    SETTLE_MS      = 0.4  # seconds stationary before reading
+    Find the centre of the nearest clear gap:
+      Phase A — turn step by step until the front opens  (gap start)
+      Phase B — keep turning until the front closes again (gap end)
+      Phase C — turn back half the gap width             (gap centre)
 
-    for step in range(80):  # max ~80 steps ≈ full rotation
-        turn(turn_dir, ALIGN_SPEED, -ALIGN_SPEED)
+    Returns True when centred, False if no gap was found.
+    """
+    ALIGN_SPEED = 80    # slow for precision
+    TURN_MS     = 0.15  # seconds of spin per step
+    SETTLE_MS   = 0.35  # seconds stationary before reading
+    back_dir    = "Hægri" if turn_dir == "Vinstri" else "Vinstri"
+
+    def step_and_read(direction):
+        turn(direction, ALIGN_SPEED, -ALIGN_SPEED)
         time.sleep(TURN_MS)
         stop()
         time.sleep(SETTLE_MS)
+        return get_distance(300, 60)
 
-        front = get_distance(300, 60)
-        print(f"  Align step {step+1}: front={front:.0f}cm")
-
+    # --- Phase A: find where the gap opens ---
+    print("  Phase A: scanning for gap opening...")
+    for step in range(90):  # up to ~full rotation
+        front = step_and_read(turn_dir)
+        print(f"    step {step+1}: front={front:.0f}cm")
         if front > turn_distance:
-            print("Aligned — front is clear!")
-            return True
+            print(f"  Gap opens at step {step+1}")
+            break
+    else:
+        print("  No gap found after full rotation.")
+        return False
 
-    print("Could not align after full rotation.")
-    return False
+    # --- Phase B: keep turning until gap closes ---
+    print("  Phase B: scanning for gap closing...")
+    gap_steps = 0
+    for step in range(90):
+        front = step_and_read(turn_dir)
+        print(f"    step {step+1}: front={front:.0f}cm")
+        if front <= turn_distance:
+            gap_steps = step  # steps from gap-open to gap-close
+            print(f"  Gap closes after {gap_steps} step(s)")
+            break
+    else:
+        # Gap never closed — very wide opening; stay near the start edge
+        gap_steps = 0
+        print("  Gap is very wide, staying near opening edge.")
+
+    # --- Phase C: back up to gap centre ---
+    back_steps = gap_steps // 2
+    print(f"  Phase C: reversing {back_steps} step(s) to centre...")
+    for _ in range(back_steps):
+        step_and_read(back_dir)
+
+    print("  Centred on gap — ready to go forward.")
+    return True
 
 
 def escape_stuck(left, right):
     """
-    Phase 1: Spin freely for up to 3 seconds — maybe that's enough.
-    Phase 2: Stop, back up if safe, take a clean stationary scan,
-             then align precisely using step-and-check turns.
+    Stop, optionally back up, then sweep to find and centre on the nearest gap.
     """
     recent_fronts.clear()
 
-    # --- Phase 1: quick spin attempt ---
-    print("Stuck! Spinning to find a way out...")
-    turn_dir = "Vinstri" if left > right else "Hægri"
-    deadline = time.time() + 3.0
-    while time.time() < deadline:
-        if get_distance(300, 60) > turn_distance:
-            print("Found way out during spin.")
-            stop()
-            time.sleep(0.3)  # let robot fully stop before handing back to main loop
-            return
-        turn(turn_dir, speed, -speed)
-        time.sleep(0.1)
-
-    # --- Phase 2: stop, scan clean, align step by step ---
-    print("Still stuck after 3s — stopping for clean scan...")
+    print("Stuck! Stopping for gap search...")
     stop()
     time.sleep(1.0)  # let LiDAR settle while stationary
 
-    # Back up if there's room behind
+    # Back up if there is room behind
     rear = get_distance(135, 225)
     if rear > 40:
         print(f"Backing up (rear: {rear:.0f}cm)...")
         reverse(speed)
         time.sleep(0.5)
         stop()
-        time.sleep(1.0)  # settle again
+        time.sleep(1.0)
     else:
         print(f"Rear blocked ({rear:.0f}cm), skipping backup.")
 
-    # Take a clean stationary snapshot and find best escape direction
-    print("Analyzing 360° scan...")
+    # Use 360° snapshot to pick the better sweep direction
     snapshot = get_scan_snapshot()
     result   = find_escape_heading(snapshot)
-
-    if result is None:
-        print("No suitable gap found — falling back to open side.")
-        turn_dir = "Vinstri" if left > right else "Hægri"
-    else:
+    if result is not None:
         _, turn_dir = result
+    else:
+        turn_dir = "Vinstri" if left > right else "Hægri"
 
-    print(f"Aligning toward gap ({turn_dir}) — step-and-check mode...")
+    print(f"Sweeping {turn_dir} to find gap centre...")
     align_to_gap(turn_dir)
     print("Escape complete.")
 
