@@ -32,3 +32,5 @@ finally:
     # Always stop the hardware properly
     picam2.stop()
     cv2.destroyAllWindows()
+    
+app.run(host='0.0.0.0', port=80)
