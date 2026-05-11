@@ -63,7 +63,7 @@ def select_input_device() -> tuple[str, str]:
 def keyboard_control(device_path: str) -> None:
     """Stýri- og keyrsluvirkni með lyklaborði."""
     
-    device = evdev.InputDevice(device_path) # Slóðin á lyklaborðið
+    keyboard = evdev.InputDevice(device_path) # Slóðin á lyklaborðið
 
     keys_held: set[str] = set() # Mengi með tökkum sem er haldið inni
     init_speed: int = 100       # Upphafs/sjálfgefinn hraði [15 til 255]
@@ -73,7 +73,7 @@ def keyboard_control(device_path: str) -> None:
     print("=== Tilbúinn í keyrslu með lyklaborði ===")
 
     try:
-        for event in device.read_loop():
+        for event in keyboard.read_loop():
             if event.type == evdev.ecodes.EV_KEY:
                 key = evdev.categorize(event)
 
@@ -126,16 +126,40 @@ def keyboard_control(device_path: str) -> None:
     # Önnur leið til að hætta í keyrslu og forriti
     except KeyboardInterrupt:
         m.stop()
-        print(f"\n=== Hætti í keyrslu ===\n")
+        print("\n=== Hætti í keyrslu ===\n")
         return
 
 
-# TODO: Á eftir að útfæra
+# TODO: Á eftir að útfæra virkni
 def ps5_control(device_path: str) -> None:
     """Stýri- og keyrsluvirkni með PlayStation fjarstýringu."""
     raise NotImplementedError
 
-    # Held að þetta verði bara eins og keyboard control nema með öðrum tökkum.
+    controller = evdev.InputDevice(device_path)
+    speed = 100
+    turn_stage = 0
+
+    print("=== Tilbúinn í keyrslu með fjarstýringu ===")
+
+    try:
+        for event in controller.read_loop():
+
+            # Takkar
+            if event.type == evdev.ecodes.EV_KEY:
+                key = evdev.categorize(event)
+
+                # * Takka haldið niðri
+
+                # * Takka sleppt
+
+            # Analog pinnar
+            if event.type == evdev.ecodes.EV_ABS:
+                ...
+
+    except KeyboardInterrupt:
+        m.stop()
+        print("\n=== Hætti í keyrslu ===\n")
+        return
 
 
 def manual() -> None:
@@ -147,7 +171,7 @@ def manual() -> None:
     # Vel inntak
     input_name, input_path = select_input_device()
 
-    if "controller" in input_name.lower():  # ? Á kannski eftir að breytast
+    if input_name.lower() in ("Controller", "DualSense"):
         ps5_control(input_path)
     else:
         keyboard_control(input_path)
