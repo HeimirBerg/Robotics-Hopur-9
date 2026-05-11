@@ -208,7 +208,7 @@ def manual() -> None:
     # Vel inntak
     input_name, input_path = select_input_device()
 
-    if input_name.lower() in ("Controller", "DualSense"):
+    if input_name.lower() in ("controller", "dualsense"):
         analog_control(input_path)
     else:
         keyboard_control(input_path)
