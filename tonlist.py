@@ -1,10 +1,13 @@
 # Tónlist
 import random
+import os
+import subprocess
 
 def tonlist(skra):
-    return f"mpg123 -a plughw:3,0 --mono \"music/{skra}\""
+    lag = subprocess.Popen(f"mpg123 -a plughw:3,0 --mono \"music/{skra}.mp3\"")
+    return lag
 
-tonar = ["guiltynigga.mp3", "baciate.mp3", "barbie.mp3", "Adolf Hitler Speech in 1935.mp3"]
+tonar = ["guiltynigga", "baciate", "barbie", "Adolf Hitler Speech in 1935"]
 
 def rtonn():
     tonlist(random.choice(tonar))
