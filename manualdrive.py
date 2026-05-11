@@ -130,36 +130,73 @@ def keyboard_control(device_path: str) -> None:
         return
 
 
-# TODO: Á eftir að útfæra virkni
-def ps5_control(device_path: str) -> None:
-    """Stýri- og keyrsluvirkni með PlayStation fjarstýringu."""
-    raise NotImplementedError
+def analog_control(device_path: str) -> None:
+    """Stýri- og keyrsluvirkni með analog fjarstýringu, t.d. PlayStation."""
 
     controller = evdev.InputDevice(device_path)
-    speed = 100
-    turn_stage = 0
 
-    print("=== Tilbúinn í keyrslu með fjarstýringu ===")
+    # Uppflettitafla með analog ásum sem eru notaðir og upphafs gildin þeirra.
+    axes = {
+        evdev.ecodes.ABS_X: 128,
+        evdev.ecodes.ABS_RZ: 0
+    }
+
+    # Flagg sem snýr formerki á hraða
+    invert_speed: bool = False
+
+    def norm_turn_axis(value: int, speed: int) -> int:
+        """Normar og skalar analog ás svo að: 0 -> 0; 128 -> speed; 255 -> 0."""
+        normalized = max(0, (255 - abs(value -128) * 2))
+        scaled = round(normalized * (speed / 255))
+        return scaled
+
+
+    def assign_speeds(invert_speed: bool) -> None:
+        """Ákveður hvaða hraða á að senda á hvaða mótor og sendir."""
+        speed = axes[evdev.ecodes.ABS_RZ]
+
+        turn_left = True if axes[evdev.ecodes.ABS_X] < 128 else False
+
+        turn_speed = norm_turn_axis(axes[evdev.ecodes.ABS_X], speed)
+
+        if turn_left:
+            m1 = turn_speed
+            m2 = speed
+        else:
+            m1 = speed
+            m2 = turn_speed
+
+        if invert_speed:
+            m1 = -m1
+            m2 = -m2
+
+        print(f"Speeds sent -> Motor 1: {m1}, Motor 2: {m2}.")
+
+
+    print("\n=== Tilbúinn í keyrslu með farstýringu ===\n")
 
     try:
         for event in controller.read_loop():
 
-            # Takkar
+            assign_speeds(invert_speed)
+
+            # Les takka
             if event.type == evdev.ecodes.EV_KEY:
-                key = evdev.categorize(event)
-
-                # * Takka haldið niðri
-
-                # * Takka sleppt
-
-            # Analog pinnar
+                button = evdev.categorize(event)
+                if button.keystate == button.key_down:
+                    if button.keycode == "BTN_TR":
+                        # Hraða er snúið við þegar ýtt er á "R1"
+                        invert_speed = True if invert_speed == False else False
+                    if button.keycode == "BTN_THUMBR":
+                        raise KeyboardInterrupt
+                    
+            # Les analog merki og skrái í uppfletti töfluna "axes"
             if event.type == evdev.ecodes.EV_ABS:
-                ...
-
+                if event.code in axes:
+                    axes[event.code] = event.value
+    
     except KeyboardInterrupt:
-        m.stop()
         print("\n=== Hætti í keyrslu ===\n")
-        return
 
 
 def manual() -> None:
@@ -171,8 +208,8 @@ def manual() -> None:
     # Vel inntak
     input_name, input_path = select_input_device()
 
-    if input_name.lower() in ("Controller", "DualSense"):
-        ps5_control(input_path)
+    if "controller" in input_name.lower():
+        analog_control(input_path)
     else:
         keyboard_control(input_path)
 
