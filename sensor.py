@@ -1,10 +1,14 @@
-from pyrplidar import PyRPlidar  # ← missing
+from pyrplidar import PyRPlidar
 import threading
 import time
 
 LIDAR_PORT = "/dev/ttyUSB0"
 BAUDRATE   = 1000000
-...
+
+_scan_data = {}
+_lock      = threading.Lock()  # ← missing
+_running   = False
+
 def LiDAR_data():
     global _running
     lidar = PyRPlidar()
