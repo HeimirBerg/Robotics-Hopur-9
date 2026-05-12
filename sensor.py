@@ -1,3 +1,10 @@
+from pyrplidar import PyRPlidar  # ← missing
+import threading
+import time
+
+LIDAR_PORT = "/dev/ttyUSB0"
+BAUDRATE   = 1000000
+...
 def LiDAR_data():
     global _running
     lidar = PyRPlidar()
