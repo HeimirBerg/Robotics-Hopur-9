@@ -47,7 +47,7 @@ zone_d = set(range(225, 316))                       # Vinstri
 def autopilot():
     for _, _ in LiDAR_data():  # keeps the lidar running
         snapshot = get_snapshot()
-        return snapshot
+        print(snapshot)
         '''
         front_near  = any_under(snapshot, zone_a, start_turn)
         front_stop  = any_under(snapshot, zone_a, sd)

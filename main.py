@@ -17,7 +17,7 @@ try:
             else:
                 print("Error: pick Y/N: ")
                 '''
-            print(autopilot())
+            autopilot()
         elif adalval == 2:
             manual() # Við stjórnum róbótanum með fjarstýringu
         elif adalval == 3:
