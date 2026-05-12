@@ -12,9 +12,16 @@ stop_distance = 20   # cm — stop and spin in place
 STUCK_THRESHOLD = 3  # cm — how little movement counts as stuck
 STUCK_TIME      = 15 # how many readings before declaring stuck
 
-ROBOT_WIDTH     = 14.5  # cm — physical width of robot
+ROBOT_WIDTH     = 18.5  # cm — physical width of robot
+ROBOT_LENGTH    = 32.3  # cm — physical length of robot
 ESCAPE_MARGIN   = 10    # cm — extra clearance on each side when looking for a gap
-MIN_ESCAPE_DIST = 50    # cm — minimum distance to consider a direction clear
+
+# Angular half-width the smoothing window must cover so a "clear" direction
+# actually fits the robot at turn_distance range.
+# arcsin((half_width + margin) / turn_distance), rounded up to nearest degree.
+ESCAPE_WINDOW = math.ceil(
+    math.degrees(math.asin((ROBOT_WIDTH / 2 + ESCAPE_MARGIN) / turn_distance))
+)
 
 # Calibration: how long drive(255, dir, -1) takes to spin 1° in place.
 # To recalibrate: run drive(255, 4, -1) for exactly 1.0 s, measure the degrees
@@ -45,9 +52,8 @@ def find_escape_heading(snapshot):
     """
     full = [snapshot.get(a, MAX_RANGE) for a in range(360)]
 
-    WINDOW = 15   # degrees either side to average over
     smoothed = [
-        sum(full[(a + i) % 360] for i in range(-WINDOW, WINDOW + 1)) / (2 * WINDOW + 1)
+        sum(full[(a + i) % 360] for i in range(-ESCAPE_WINDOW, ESCAPE_WINDOW + 1)) / (2 * ESCAPE_WINDOW + 1)
         for a in range(360)
     ]
 
