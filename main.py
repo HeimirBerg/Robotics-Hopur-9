@@ -17,8 +17,7 @@ try:
             else:
                 print("Error: pick Y/N: ")
                 '''
-            for angle, distance in autopilot(): # Róbóti keyrir sjálfur
-                print(f"Angle: {angle}°, Distance: {distance:.1f} cm")
+            print(autopilot())
         elif adalval == 2:
             manual() # Við stjórnum róbótanum með fjarstýringu
         elif adalval == 3:
