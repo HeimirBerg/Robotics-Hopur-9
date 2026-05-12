@@ -13,7 +13,7 @@ import movement as m
 
 
 SPEED_BOOST: int = 50  # Hraði sem er bætt við þegar takka hefur verið haldi í biðtíma
-WAIT_TIMES: tuple[int, int] =  (3, 10)  # [s]
+WAIT_TIMES: tuple[int, int] = (3, 10)  # [s]
 
 
 def find_input_devices() -> None:
@@ -21,7 +21,7 @@ def find_input_devices() -> None:
 
     devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
 
-    if not devices:
+    if not devices: # Ef listinn er tómur
         print("\nFann engin tæki!\n")
     else:
         # Prenta töflu
@@ -38,26 +38,19 @@ def select_input_device() -> tuple[str, str]:
     :return: Nafn og slóð á valið tæki.
     """
 
-    name: str | None = None
     devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
     
-    while name is None:
-        try:
-            name = input("Sláðu inn nafn eða slóð lyklaborðs eða fjarstýringar: ")
+    while True:
+        name = input("Sláðu inn nafn eða slóð lyklaborðs eða fjarstýringar: ")
 
-            for device in devices:
-                if name.lower() in device.name.lower():
-                    return device.name, device.path
-                elif name.lower() in device.path.lower(): 
-                    return device.name, device.path
-            
-            # Prentar aðeins ef for-lykkja klárast án þess að skila slóð
-            name = None
-            print("Fann ekki tækið sem þú leitaðir að.\n")
+        for device in devices:
+            if name.lower() in device.name.lower():
+                return device.name, device.path
+            elif name.lower() in device.path.lower(): 
+                return device.name, device.path
         
-        except ValueError:
-            name = None
-            print("Ógilt nafn slegið inn. Þarf að vera strengur.\n")
+        # Prentar aðeins ef for-lykkja klárast án þess að skila slóð
+        print("Fann ekki tækið sem þú leitaðir að.\n")
 
 
 def keyboard_control(device_path: str) -> None:
@@ -113,8 +106,7 @@ def keyboard_control(device_path: str) -> None:
 
                     elif key.keycode == "KEY_SPACE":
                         m.stop()
-                        print(f"\n=== Hætti í keyrslu ===\n{"Bless, bless...":^23}\n")
-                        return
+                        raise KeyboardInterrupt
 
                 # Þegar takka er sleppt
                 elif key.keystate == key.key_up:
@@ -127,7 +119,6 @@ def keyboard_control(device_path: str) -> None:
     except KeyboardInterrupt:
         m.stop()
         print("\n=== Hætti í keyrslu ===\n")
-        return
 
 
 def analog_control(device_path: str) -> None:
@@ -150,19 +141,16 @@ def analog_control(device_path: str) -> None:
         scaled = round(normalized * (speed / 255))
         return scaled
 
-
     def assign_speeds(invert_speed: bool) -> None:
         """Ákveður hvaða hraða á að senda á hvaða mótor og sendir."""
+
         speed = axes[evdev.ecodes.ABS_RZ]
-
-        turn_left = True if axes[evdev.ecodes.ABS_X] < 128 else False
-
         turn_speed = norm_turn_axis(axes[evdev.ecodes.ABS_X], speed)
 
-        if turn_left:
+        if axes[evdev.ecodes.ABS_X] < 128:  # Beygja til vinstri
             m1 = turn_speed
             m2 = speed
-        else:
+        else:                               # Beygja til hægri
             m1 = speed
             m2 = turn_speed
 
@@ -170,8 +158,7 @@ def analog_control(device_path: str) -> None:
             m1 = -m1
             m2 = -m2
 
-        print(f"Speeds sent -> Motor 1: {m1}, Motor 2: {m2}.")
-
+        m.send_speeds(m1, m2)
 
     print("\n=== Tilbúinn í keyrslu með farstýringu ===\n")
 
@@ -184,9 +171,11 @@ def analog_control(device_path: str) -> None:
             if event.type == evdev.ecodes.EV_KEY:
                 button = evdev.categorize(event)
                 if button.keystate == button.key_down:
+                    
                     if button.keycode == "BTN_TR":
                         # Hraða er snúið við þegar ýtt er á "R1"
-                        invert_speed = True if invert_speed == False else False
+                        invert_speed = not invert_speed
+
                     if button.keycode == "BTN_THUMBR":
                         raise KeyboardInterrupt
                     
@@ -196,6 +185,7 @@ def analog_control(device_path: str) -> None:
                     axes[event.code] = event.value
     
     except KeyboardInterrupt:
+        m.stop()
         print("\n=== Hætti í keyrslu ===\n")
 
 
