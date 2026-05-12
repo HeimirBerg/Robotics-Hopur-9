@@ -1,5 +1,5 @@
 from manualdrive import manual
-from lidar_auto import *
+from auto import *
 from movement import stop
 
 try:
