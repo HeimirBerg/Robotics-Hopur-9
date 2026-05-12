@@ -15,8 +15,8 @@ try:
             else:
                 print("Error: pick Y/N: ")
                 '''
-            angle,distance = autopilot()
-            print(f"Angle: {angle}, Distance: {distance}")
+            for angle, distance in autopilot():
+                print(f"Angle: {angle}°, Distance: {distance:.1f} cm")
         elif adalval == 2:
             manual()
         elif adalval == 3:
