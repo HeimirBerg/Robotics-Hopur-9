@@ -15,7 +15,7 @@ try:
             else:
                 print("Error: pick Y/N: ")
                 '''
-            autopilot()
+            print(autopilot())
         elif adalval == 2:
             manual()
         elif adalval == 3:
