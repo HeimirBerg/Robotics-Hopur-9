@@ -7,7 +7,7 @@ from collections import deque
 
 # --- Fastar ---
 speed         = 150
-turn_distance = 80   # cm — start turning
+turn_distance = 120  # cm — start turning
 stop_distance = 20   # cm — stop and spin in place
 STUCK_THRESHOLD = 3  # cm — how little movement counts as stuck
 STUCK_TIME      = 15 # how many readings before declaring stuck
@@ -168,17 +168,16 @@ def autopilot():
                 forward(speed)
 
             elif front_narrow > stop_distance:
-                # Wide sensor sees a wall coming — start curving away early.
-                # Use the closer of the two readings so the curve starts gently
-                # from far away and tightens as the robot gets closer.
+                # Wall detected — curve away smoothly like a car.
+                # Outer wheel stays at full speed always.
+                # Inner wheel slows linearly: full speed (straight) → 0 (tight curve).
                 front_ref = min(front_wide, front_narrow)
                 ratio = (front_ref - stop_distance) / (turn_distance - stop_distance)
-                outer = int(speed * (0.5 + 0.5 * ratio))
-                inner = int(speed * ratio * ratio)
+                inner = int(speed * ratio)
                 if left > right:
-                    turn("Vinstri", outer, inner)
+                    turn("Vinstri", speed, inner)
                 else:
-                    turn("Hægri", outer, inner)
+                    turn("Hægri", speed, inner)
 
             else:
                 # Narrow sensor critically close — full escape
