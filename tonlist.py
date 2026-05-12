@@ -4,7 +4,7 @@ import os
 import subprocess
 
 def tonlist(skra):
-    lag = subprocess.Popen(f"mpg123 -a plughw:3,0 --mono \"music\{skra}.mp3\"")
+    lag = subprocess.Popen(f"mpg123 -a plughw:3,0 --mono \"music{skra}.mp3\"")
     return lag
 
 tonar = ["guiltynigga", "baciate", "barbie", "Adolf Hitler Speech in 1935"]
