@@ -6,7 +6,7 @@ Gefur notenda valmöguleika á milli tækja og
 velur sjálfvirkt hvaða keyrslu fall á að nota.
 """
 
-import evdev # type: ignore
+import evdev  # type: ignore
 import time
 
 import movement as m
@@ -159,8 +159,7 @@ def analog_control(device_path: str) -> None:
             m2 = -m2
 
         m.send_speeds(m1, m2)
-        time.sleep(0.001)
-        # print("sendi")
+        time.sleep(0.001)  # Smá seinkun svo chrashi ekki
 
     print("\n=== Tilbúinn í keyrslu með farstýringu ===\n")
 
