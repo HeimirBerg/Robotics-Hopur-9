@@ -48,6 +48,9 @@ def autopilot():
     for _, _ in LiDAR_data():  # keeps the lidar running
         snapshot = get_snapshot()
         print(snapshot)
+        if len(snapshot) >= 300:  # wait until we have a mostly full rotation
+            print(snapshot)
+            break
         '''
         front_near  = any_under(snapshot, zone_a, start_turn)
         front_stop  = any_under(snapshot, zone_a, sd)
