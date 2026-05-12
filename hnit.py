@@ -6,8 +6,8 @@ from lidarprufa import get_distance, start_lidar, stop_lidar
 # --- Stillingar ---
 SPEED = 255
 CM_PER_SEC = 40.0  # Mælingin þín: 40cm á 1 sekúndu
-GOAL_X = input("Sláðu inn vegalengd til hliðar í mm (+hægri-vinstri): ")     # Markmið X (t.d. 2 metrar til hægri)
-GOAL_Y = input("Sláðu inn færslu áfram í mm: ")     # Markmið Y (t.d. 3 metrar áfram)
+GOAL_X = float(input("Sláðu inn vegalengd til hliðar í mm (+hægri-vinstri): "))     # Markmið X (t.d. 2 metrar til hægri)
+GOAL_Y = float(input("Sláðu inn færslu áfram í mm: "))     # Markmið Y (t.d. 3 metrar áfram)
 
 class RobotPos:
     def __init__(self):
