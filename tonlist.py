@@ -10,7 +10,7 @@ def tonlist(skra): # Notum þetta fall til að spila tónlist
 
 tonar = ["guiltynigga", "baciate", "barbie", "Adolf Hitler Speech in 1935"]
 
-def rtonn():
+def rtonn(): # Spilum lag af handahófi
     tonlist(random.choice(tonar))
 
 x = input("Veldu 1 eða 2 fyrir valið eða handahófskennt")
