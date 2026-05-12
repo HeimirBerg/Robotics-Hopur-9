@@ -6,14 +6,14 @@ import math
 from collections import deque
 
 # --- Fastar ---
-speed         = 150
+speed         = 255
 turn_distance = 80   # cm — start turning
 stop_distance = 20   # cm — stop and spin in place
 STUCK_THRESHOLD = 3  # cm — how little movement counts as stuck
 STUCK_TIME      = 15 # how many readings before declaring stuck
 
-ROBOT_WIDTH     = 18.5  # cm — physical width of robot
-ROBOT_LENGTH    = 32.3  # cm — physical length of robot
+ROBOT_WIDTH     = 19  # cm — physical width of robot
+ROBOT_LENGTH    = 33  # cm — physical length of robot
 ESCAPE_MARGIN   = 10    # cm — extra clearance on each side when looking for a gap
 
 # Angular half-width the smoothing window must cover so a "clear" direction
