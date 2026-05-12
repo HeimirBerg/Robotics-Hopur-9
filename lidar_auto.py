@@ -6,14 +6,14 @@ import math
 from collections import deque
 
 # --- Fastar ---
-speed         = 255
+speed         = 150
 turn_distance = 80   # cm — start turning
 stop_distance = 20   # cm — stop and spin in place
 STUCK_THRESHOLD = 3  # cm — how little movement counts as stuck
 STUCK_TIME      = 15 # how many readings before declaring stuck
 
-ROBOT_WIDTH     = 19  # cm — physical width of robot
-ROBOT_LENGTH    = 33  # cm — physical length of robot
+ROBOT_WIDTH     = 18.5  # cm — physical width of robot
+ROBOT_LENGTH    = 32.3  # cm — physical length of robot
 ESCAPE_MARGIN   = 10    # cm — extra clearance on each side when looking for a gap
 
 # Angular half-width the smoothing window must cover so a "clear" direction
@@ -150,24 +150,29 @@ def autopilot():
 
     try:
         while True:
-            front = get_distance(345, 15)   # tight ±15° cone — only dead ahead
-            right = get_distance(45, 135)
-            left  = get_distance(225, 315)
+            front_wide   = get_distance(315, 45)   # ±45° — early wall detection
+            front_narrow = get_distance(345, 15)   # ±15° — dead ahead only
+            right        = get_distance(45, 135)
+            left         = get_distance(225, 315)
 
-            recent_fronts.append(front)
+            recent_fronts.append(front_narrow)
 
-            print(f"front: {front:.0f}  left: {left:.0f}  right: {right:.0f}")
+            print(f"front: {front_narrow:.0f} ({front_wide:.0f} wide)  left: {left:.0f}  right: {right:.0f}")
 
             if is_stuck():
                 print("Stuck! Scanning for escape route...")
                 escape_stuck(left, right)
 
-            elif front > turn_distance:
+            elif front_wide > turn_distance:
+                # Both sensors clear — drive straight at full speed
                 forward(speed)
 
-            elif front > stop_distance:
-                # Gradually curve away from the obstacle toward the more open side
-                ratio = (front - stop_distance) / (turn_distance - stop_distance)
+            elif front_narrow > stop_distance:
+                # Wide sensor sees a wall coming — start curving away early.
+                # Use the closer of the two readings so the curve starts gently
+                # from far away and tightens as the robot gets closer.
+                front_ref = min(front_wide, front_narrow)
+                ratio = (front_ref - stop_distance) / (turn_distance - stop_distance)
                 outer = int(speed * (0.5 + 0.5 * ratio))
                 inner = int(speed * ratio * ratio)
                 if left > right:
@@ -176,8 +181,8 @@ def autopilot():
                     turn("Hægri", outer, inner)
 
             else:
-                # Critically close — scan, spin to best heading, drive out
-                print(f"Too close ({front:.0f}cm) — scanning for best heading...")
+                # Narrow sensor critically close — full escape
+                print(f"Too close ({front_narrow:.0f}cm) — scanning for best heading...")
                 escape_stuck(left, right)
 
             time.sleep(0.1)
