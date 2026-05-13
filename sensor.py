@@ -2,19 +2,19 @@ from pyrplidar import PyRPlidar
 import threading
 import time
 
-LIDAR_PORT = "/dev/ttyUSB0"
-BAUDRATE   = 1000000
-MAX_RANGE  = 300  # cm
+LidarPort = "/dev/ttyUSB0"
+Baudrate   = 1000000
+MaxRange  = 300  # cm
 
-_scan_data = {}
-_lock      = threading.Lock()
-_running   = False
+ScanData = {}
+Lock      = threading.Lock()
+Running   = False
 
-def LiDAR_data():
-    global _running, _scan_data
+def LiDAR_data(): #Keyra LiDAR, skila gögnum og slökkva á LiDAR
+    global Running, ScanData
     lidar = PyRPlidar()
     try:
-        lidar.connect(port=LIDAR_PORT, baudrate=BAUDRATE, timeout=3)
+        lidar.connect(port=LidarPort, baudrate=Baudrate, timeout=3)  
         lidar.reset()
         time.sleep(5)
         lidar.lidar_serial._serial.reset_input_buffer()
@@ -31,32 +31,52 @@ def LiDAR_data():
         if scan_gen is None:
             raise Exception("Could not start scan after 100 attempts")
 
-        _running = True
+        Running = True
 
         for scan in scan_gen():
-            if not _running:
+            if not Running:
                 break
             angle    = round(scan.angle) % 360
             distance = scan.distance / 10.0
-            if 0 < distance <= MAX_RANGE:
-                with _lock:
-                    _scan_data[angle] = distance
+            if 0 < distance <= MaxRange:
+                with Lock:
+                    ScanData[angle] = distance
                 yield angle, distance
 
     except KeyboardInterrupt:
         pass
     finally:
-        _running = False
+        Running = False
         lidar.stop()
         lidar.disconnect()
 
 def get_snapshot():
-    with _lock:
-        return dict(_scan_data)
+    with Lock:
+        return dict(ScanData)
 
-def any_under(snapshot, zone, threshold):
-    return any(dist < threshold for angle, dist in snapshot.items() if angle in zone)
+def under(snapshot, zone, threshold):
+    for a, d in snapshot.items():
+        if a in zone:
+            if d < threshold:
+                return True
+    return False
 
 def zone_clearance(snapshot, zone):
-    distances = [dist for angle, dist in snapshot.items() if angle in zone]
-    return sum(distances) / len(distances) if distances else MAX_RANGE
+    distances = []
+    for angle, dist in snapshot.items():
+        if angle in zone:
+            distances.append(dist)
+    
+    if distances:
+        return sum(distances) / len(distances)
+    else:
+        return MaxRange
+def min_distance(snapshot, zone):
+    distances = []
+    for angle, dist in snapshot.items():
+        if angle in zone:
+            distances.append(dist)
+    if distances:
+        return min(distances)
+    else:
+        return MaxRange

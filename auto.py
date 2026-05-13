@@ -37,57 +37,103 @@ def autopilot():
 # ------Fastar------
 speed      = 150
 start_turn = 60
-sd         = 20  # Stop distance
+sd         = 20  
 
 # ------ Svæði ------
 zone_a = set(range(315, 360)) | set(range(0, 46))  # Fram
 zone_b = set(range(45, 136))                        # Hægri
 zone_c = set(range(135, 226))                       # Aftur
 zone_d = set(range(225, 316))                       # Vinstri
+degTime = 1.0 / 167.9                               #Tíma fasti til að snúa bílnum ATH þarf örgl að uppfæra neð nýja boddí
+
+def findExit(snapshot):
+    full = [snapshot.get(a, MaxRange) for a in range(360)]
+    smoothed = [
+        sum(full[(a + i) % 360] for i in range(-15, 16)) / 31
+        for a in range(360)
+    ]
+    best_angle = max(range(360), key=lambda a: smoothed[a])
+    direction  = "Hægri" if 1 <= best_angle <= 179 else "Vinstri"
+    print(f"Best exit: {best_angle}° → {direction}")
+    return best_angle, direction
+
+def turnToExit(heading, direction):
+    if direction == "Hægri":
+        angle   = heading
+        dir_num = 4
+    else:
+        angle   = 360 - heading
+        dir_num = 3
+    if angle < 2:
+        return
+    duration = angle * degTime
+    print(f"Spinning {direction} {angle}° → {duration:.3f}s")
+    drive(255, dir_num, -1)
+    time.sleep(duration)
+    stop()
+    time.sleep(0.4)
 def autopilot():
     for _, _ in LiDAR_data():  # keeps the lidar running
         snapshot = get_snapshot()
-        print(snapshot)
-        if len(snapshot) >= 300:  # wait until we have a mostly full rotation
-            print(snapshot)
-            break
-        '''
-        front_near  = any_under(snapshot, zone_a, start_turn)
-        front_stop  = any_under(snapshot, zone_a, sd)
-        right_block = any_under(snapshot, zone_b, sd)
-        left_block  = any_under(snapshot, zone_d, sd)
+        
+        FrontClose = under(snapshot, zone_a, start_turn)
+        FrontStop  = under(snapshot, zone_a, sd)
+        RightClose = under(snapshot, zone_b, sd)
+        LeftClose  = under(snapshot, zone_d, sd)
 
         right_clear = zone_clearance(snapshot, zone_b)
         left_clear  = zone_clearance(snapshot, zone_d)
+        front_dist  = min_distance(snapshot, zone_a)  # nálægasta hindrun framundan
 
-        if not front_stop and not front_near:
+        if not FrontStop and not FrontClose:
             # ------ keyra áfram ------
-            if left_block and not right_block:
-                pass  # Smávegis til hægri á meðan við keyrum áfram
-            elif right_block and not left_block:
-                pass  # Smávegis til vinstri á meðan við keyrum áfram
+            if LeftClose and not RightClose:
+                auto_calculate_turn("Hægri", front_dist, speed)  # Smávegis til hægri á meðan við keyrum áfram
+            elif RightClose and not LeftClose:
+                auto_calculate_turn("Vinstri", front_dist, speed)   # Smávegis til vinstri á meðan við keyrum áfram
             else:
-                pass  # Keyra beint áfram
+                send_speeds(speed,speed)
 
-        elif front_near and not front_stop:
-            # ------ Eitthvað framundan en enn pláss — rólegt beyg ------
+        elif FrontClose and not FrontStop:
+            # ------ Eitthvað framundan en enn pláss — rólegt beygja ------
             if left_clear > right_clear:
-                pass  # Beygja smávegis til vinstri
+                auto_calculate_turn("Vinstri", front_dist, speed)   # Beygja smá til vinstri
             else:
-                pass  # Beygja smávegis til hægri
+                auto_calculate_turn("Hægri", front_dist, speed)  # Beygja smá til hægri
 
-        elif front_stop:
+        elif FrontStop:
             # ------ Of nálægt framundan — stoppa ------
-            if not left_block and not right_block:
+            if not LeftClose and not RightClose:
+                # Hliðar frjálsar — beygja í frjálsari átt
                 if left_clear > right_clear:
-                    pass  # Beygja til vinstri
+                    auto_calculate_turn("Vinstri", front_dist, speed)
                 else:
-                    pass  # Beygja til hægri
-            elif left_block and right_block:
-                # Allt lokað — bakka og beygja
-                pass  # Bakka
-                if left_clear > right_clear:
-                    pass  # Beygja til vinstri eftir að bakka
+                    auto_calculate_turn("Hægri", front_dist, speed)
+
+            elif LeftClose and not RightClose:
+                # Vinstri lokuð — beygja til hægri
+                auto_calculate_turn("Hægri", front_dist, speed)
+
+            elif RightClose and not LeftClose:
+                # Hægri lokuð — beygja til vinstri
+                auto_calculate_turn("Vinstri", front_dist, speed)
+
+            elif LeftClose and RightClose:
+                # Allt lokað — athuga hvort nóg pláss sé til að snúa
+                total_side_space = left_clear + right_clear
+                if total_side_space >= 33:
+                    # Nóg pláss — stoppa, skanna og snúa í bestu átt
+                    stop()
+                    snapshot = get_snapshot()
+                    heading, direction = findExit(snapshot)
+                    turnToExit(heading, direction)
                 else:
-                    pass  # Beygja til hægri eftir að bakka
-            '''
+                    # Of þröngt — bakka
+                    send_speeds(-speed, -speed)
+                    time.sleep(0.5)
+                    stop()
+                    # Síðan snúa í frjálsari átt
+                    if left_clear > right_clear:
+                        auto_calculate_turn("Vinstri", front_dist, speed)
+                    else:
+                        auto_calculate_turn("Hægri", front_dist, speed)
