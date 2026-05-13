@@ -12,7 +12,7 @@ zone_a = set(range(315, 360)) | set(range(0, 46))  # Fram
 zone_b = set(range(45, 136))                        # Hægri
 zone_c = set(range(135, 226))                       # Aftur
 zone_d = set(range(225, 316))                       # Vinstri
-degTime = 1.0 / 167.9                               # Tíma fasti til að snúa bílnum ATH þarf örgl að uppfæra með nýja boddí
+degTime = 1.0 / 64.8                               # Tíma fasti til að snúa bílnum ATH þarf örgl að uppfæra með nýja boddí
 
 def findExit(snapshot):
     full = [snapshot.get(a, MaxRange) for a in range(360)]
