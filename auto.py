@@ -3,9 +3,9 @@ from movement import *
 import time
 
 # ------Fastar------
-speed      = 150
-start_turn = 50
-sd         = 30  
+speed      = 200
+start_turn = 80
+sd         = 35  
 
 # ------ Svæði ------
 zone_a = set(range(315, 360)) | set(range(0, 46))  # Fram
