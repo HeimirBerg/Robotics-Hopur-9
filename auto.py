@@ -75,6 +75,8 @@ def turnToExit(heading, direction):
 def autopilot():
     for _, _ in LiDAR_data():  # keeps the lidar running
         snapshot = get_snapshot()
+        if len(snapshot) < 300:
+            continue
         
         FrontClose = under(snapshot, zone_a, start_turn)
         FrontStop  = under(snapshot, zone_a, sd)
