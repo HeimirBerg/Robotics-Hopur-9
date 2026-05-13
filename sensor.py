@@ -3,18 +3,19 @@ import threading
 import time
 
 LidarPort = "/dev/ttyUSB0"
-Baudrate   = 1000000
+Baudrate  = 1000000
 MaxRange  = 300  # cm
 
 ScanData = {}
-Lock      = threading.Lock()
-Running   = False
+Lock     = threading.Lock()
+Running  = False
+_thread  = None
 
-def LiDAR_data(): #Keyra LiDAR, skila gögnum og slökkva á LiDAR
+def _scan_worker():
     global Running, ScanData
     lidar = PyRPlidar()
     try:
-        lidar.connect(port=LidarPort, baudrate=Baudrate, timeout=3)  
+        lidar.connect(port=LidarPort, baudrate=Baudrate, timeout=3)
         lidar.reset()
         time.sleep(5)
         lidar.lidar_serial._serial.reset_input_buffer()
@@ -31,8 +32,6 @@ def LiDAR_data(): #Keyra LiDAR, skila gögnum og slökkva á LiDAR
         if scan_gen is None:
             raise Exception("Could not start scan after 100 attempts")
 
-        Running = True
-
         for scan in scan_gen():
             if not Running:
                 break
@@ -41,14 +40,28 @@ def LiDAR_data(): #Keyra LiDAR, skila gögnum og slökkva á LiDAR
             if 0 < distance <= MaxRange:
                 with Lock:
                     ScanData[angle] = distance
-                yield angle, distance
 
-    except KeyboardInterrupt:
-        pass
+    except Exception as e:
+        print(f"LiDAR error: {e}")
     finally:
         Running = False
         lidar.stop()
         lidar.disconnect()
+        print("LiDAR disconnected.")
+
+def start_lidar():
+    global Running, _thread
+    Running = True
+    _thread = threading.Thread(target=_scan_worker, daemon=True)
+    _thread.start()
+    time.sleep(8)  # Bíður eftir reset + fyrsta scan
+    print("LiDAR ready.")
+
+def stop_lidar():
+    global Running
+    Running = False
+    if _thread:
+        _thread.join(timeout=3)
 
 def get_snapshot():
     with Lock:
@@ -66,11 +79,11 @@ def zone_clearance(snapshot, zone):
     for angle, dist in snapshot.items():
         if angle in zone:
             distances.append(dist)
-    
     if distances:
         return sum(distances) / len(distances)
     else:
         return MaxRange
+
 def min_distance(snapshot, zone):
     distances = []
     for angle, dist in snapshot.items():
