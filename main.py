@@ -1,30 +1,43 @@
-from manualdrive import manual
-from auto import *
-from movement import stop
+"""Aðal skráin sem Lalli keyrir"""
+
 import subprocess
 
-try:
+from movement import stop
+from manualdrive import manual
+from auto import *
+
+
+def lalli() -> None:
+    """Fallið hans Lalla"""
+    
+    print("\n=== Hæ, hæ, ég er Lalli Róbóti ===\n")
+
     """subprocess.Popen("python3 myndavel.py")""" # Keyrir myndavél í bakgrunni
-    while True: # Fyrst veljum við hvernig stillingu við ætlum að hafa á róbótanum
-        adalval = int(input(" Vinsamlegast veldu eftirfarandi:\n 1 - Autopilot\n 2 - Manual Mode\n 3 - Hætta\n "))
-        if adalval == 1: 
-            '''
-            n = input("Enable Servo? Y/N: ")
-            if n == "Y":
+
+    while True:
+        print("Hvað viltu að ég geri?")
+        print("1 - Sjálfvirk keyrsla\n2 - Hanvirk keyrsla\n3 - Hætta")
+
+        try:
+            selection = int(input("Val: "))
+
+            if selection == 1:
                 autopilot()
-            elif n == "N":
-                autopilot(False)
+            elif selection == 2:
+                manual()
+            elif selection == 3:
+                raise KeyboardInterrupt
             else:
-                print("Error: pick Y/N: ")
-                '''
-            autopilot()
-        elif adalval == 2:
-            manual() # Við stjórnum róbótanum með fjarstýringu
-        elif adalval == 3:
-            stop() # Stoppum forritið
+                print("Ég veit ekki hvað þessi tala gerir.\nVeldu tölu á bilinu 1-3.\n")
+
+        except ValueError:
+            print("Úps. Passaðu að slá inn tölustaf á bilinu 1-3.\n")
+
+        except KeyboardInterrupt:
+            stop()
+            print("=== Hætti í keyrslu ===\nSé þig seinna.")
             break
-        else:
-            print("Vinsamlegast veldu gilda tölu")
-except KeyboardInterrupt:
-    stop()
-    print("\n-------- Ó fokk --------")
+            
+
+if __name__ == "__main__":
+    lalli()
