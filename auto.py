@@ -72,9 +72,9 @@ def autopilot():
             elif FrontClose and not FrontStop:
                 # ------ Eitthvað framundan en enn pláss — rólegt beygja ------
                 if left_clear > right_clear:
-                    drive(speed, 3, 2)  # Beygja smá til vinstri á meðan við keyrum áfram
+                    auto_calculate_turn("Vinstri", front_dist, speed)
                 else:
-                    drive(speed, 4, 2)  # Beygja smá til hægri á meðan við keyrum áfram
+                    auto_calculate_turn("Hægri", front_dist, speed)
 
             elif FrontStop:
                 if not LeftClose and not RightClose:
