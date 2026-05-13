@@ -37,6 +37,11 @@ def _scan_worker():
                 break
             angle    = round(scan.angle) % 360
             distance = scan.distance / 10.0
+
+            if angle == 0:
+                with Lock:
+                    ScanData = {}  # Hreinsa gömul gögn við hverja heila hringrás
+
             if 0 < distance <= MaxRange:
                 with Lock:
                     ScanData[angle] = distance
