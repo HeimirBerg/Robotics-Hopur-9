@@ -55,9 +55,12 @@ def autopilot():
 
             right_clear = zone_clearance(snapshot, zone_b)
             left_clear  = zone_clearance(snapshot, zone_d)
-            front_dist  = min_distance(snapshot, zone_a)  # nálægasta hindrun framundan
+            front_dist  = min_distance(snapshot, zone_a)
+
+            print(f"front: {front_dist:.0f}cm  FrontClose: {FrontClose}  FrontStop: {FrontStop}  L: {LeftClose}  R: {RightClose}")
 
             if not FrontStop and not FrontClose:
+        
                 # ------ keyra áfram ------
                 if LeftClose and not RightClose:
                     auto_calculate_turn("Hægri", front_dist, speed)   # Smávegis til hægri á meðan við keyrum áfram
