@@ -79,15 +79,15 @@ def autopilot():
             elif FrontStop:
                 if not LeftClose and not RightClose:
                     if left_clear > right_clear:
-                        turn("Vinstri", speed, 0)  # hard left, inner wheel stopped
+                        drive(speed, 3, -1)  # snúa á staðnum til vinstri
                     else:
-                        turn("Hægri", speed, 0)    # hard right, inner wheel stopped
+                        drive(speed, 4, -1)  # snúa á staðnum til hægri
 
                 elif LeftClose and not RightClose:
-                    turn("Hægri", speed, 0)
+                    drive(speed, 4, -1)      # snúa á staðnum til hægri
 
                 elif RightClose and not LeftClose:
-                    turn("Vinstri", speed, 0)
+                    drive(speed, 3, -1)      # snúa á staðnum til vinstri
 
                 else:
                     stop()
