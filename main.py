@@ -35,7 +35,7 @@ def lalli() -> None:
 
         except KeyboardInterrupt:
             stop()
-            print("=== Hætti í keyrslu ===\nSé þig seinna.")
+            print("\n=== Hætti í keyrslu ===\nSé þig seinna.")
             break
             
 
