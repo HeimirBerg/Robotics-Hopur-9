@@ -74,43 +74,21 @@ def autopilot():
                     auto_calculate_turn("Hægri", front_dist, speed)    # Beygja smá til hægri
 
             elif FrontStop:
-                stop()  # ← actually stop first
-                time.sleep(0.2)  # ← let it settle
-                # ------ Of nálægt framundan — stoppa ------
-                if not LeftClose and not RightClose:
-                    # Hliðar frjálsar — beygja í frjálsari átt
-                    if left_clear > right_clear:
-                        drive(speed, 3, -1)  # snúa á staðnum til vinstri
-                    else:
-                        drive(speed, 4, -1)  # snúa á staðnum til hægri
+                # ------ Of nálægt framundan — stoppa og finna besta útveg ------
+                stop()
+                time.sleep(0.2)
 
-                elif LeftClose and not RightClose:
-                    # Vinstri lokuð — beygja til hægri
-                    drive(speed, 4, -1)  # snúa á staðnum til hægri
+                if LeftClose and RightClose and (left_clear + right_clear) < 33:
+                    # Of þröngt — bakka fyrst
+                    send_speeds(-speed, -speed)
+                    time.sleep(0.5)
+                    stop()
+                    time.sleep(0.2)
 
-                elif RightClose and not LeftClose:
-                    # Hægri lokuð — beygja til vinstri
-                    drive(speed, 3, -1)  # snúa á staðnum til vinstri
-
-                elif LeftClose and RightClose:
-                    # Allt lokað — athuga hvort nóg pláss sé til að snúa
-                    total_side_space = left_clear + right_clear
-                    if total_side_space >= 33:
-                        # Nóg pláss — stoppa, skanna og snúa í bestu átt
-                        stop()
-                        snapshot = get_snapshot()
-                        heading, direction = findExit(snapshot)
-                        turnToExit(heading, direction)
-                    else:
-                        # Of þröngt — bakka
-                        send_speeds(-speed, -speed)
-                        time.sleep(0.5)
-                        stop()
-                        # Síðan snúa í frjálsari átt
-                        if left_clear > right_clear:
-                            drive(speed, 3, -1)  # snúa á staðnum til vinstri
-                        else:
-                            drive(speed, 4, -1)  # snúa á staðnum til hægri
+                # Skanna og snúa í bestu átt
+                snapshot = get_snapshot()
+                heading, direction = findExit(snapshot)
+                turnToExit(heading, direction)
 
             time.sleep(0.1)
 
