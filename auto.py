@@ -74,21 +74,23 @@ def autopilot():
                     auto_calculate_turn("Hægri", front_dist, speed)    # Beygja smá til hægri
 
             elif FrontStop:
+                stop()  # ← actually stop first
+                time.sleep(0.2)  # ← let it settle
                 # ------ Of nálægt framundan — stoppa ------
                 if not LeftClose and not RightClose:
                     # Hliðar frjálsar — beygja í frjálsari átt
                     if left_clear > right_clear:
-                        auto_calculate_turn("Vinstri", front_dist, speed)
+                        drive(speed, 3, -1)  # snúa á staðnum til vinstri
                     else:
-                        auto_calculate_turn("Hægri", front_dist, speed)
+                        drive(speed, 4, -1)  # snúa á staðnum til hægri
 
                 elif LeftClose and not RightClose:
                     # Vinstri lokuð — beygja til hægri
-                    auto_calculate_turn("Hægri", front_dist, speed)
+                    drive(speed, 4, -1)  # snúa á staðnum til hægri
 
                 elif RightClose and not LeftClose:
                     # Hægri lokuð — beygja til vinstri
-                    auto_calculate_turn("Vinstri", front_dist, speed)
+                    drive(speed, 3, -1)  # snúa á staðnum til vinstri
 
                 elif LeftClose and RightClose:
                     # Allt lokað — athuga hvort nóg pláss sé til að snúa
@@ -106,9 +108,9 @@ def autopilot():
                         stop()
                         # Síðan snúa í frjálsari átt
                         if left_clear > right_clear:
-                            auto_calculate_turn("Vinstri", front_dist, speed)
+                            drive(speed, 3, -1)  # snúa á staðnum til vinstri
                         else:
-                            auto_calculate_turn("Hægri", front_dist, speed)
+                            drive(speed, 4, -1)  # snúa á staðnum til hægri
 
             time.sleep(0.1)
 
