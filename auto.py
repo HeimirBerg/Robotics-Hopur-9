@@ -4,7 +4,7 @@ import time
 
 # ------Fastar------
 speed      = 150
-start_turn = 60
+start_turn = 40
 sd         = 20  
 
 # ------ Svæði ------
@@ -72,9 +72,9 @@ def autopilot():
             elif FrontClose and not FrontStop:
                 # ------ Eitthvað framundan en enn pláss — rólegt beygja ------
                 if left_clear > right_clear:
-                    auto_calculate_turn("Vinstri", front_dist, speed)  # Beygja smá til vinstri
+                    drive(speed, 3, 2)  # Beygja smá til vinstri á meðan við keyrum áfram
                 else:
-                    auto_calculate_turn("Hægri", front_dist, speed)    # Beygja smá til hægri
+                    drive(speed, 4, 2)  # Beygja smá til hægri á meðan við keyrum áfram
 
             elif FrontStop:
                 if not LeftClose and not RightClose:
