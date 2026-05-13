@@ -74,21 +74,34 @@ def autopilot():
                     auto_calculate_turn("Hægri", front_dist, speed)    # Beygja smá til hægri
 
             elif FrontStop:
-                # ------ Of nálægt framundan — stoppa og finna besta útveg ------
-                stop()
-                time.sleep(0.2)
+                if not LeftClose and not RightClose:
+                    # Hliðar frjálsar — beygja þétt en halda áfram
+                    if left_clear > right_clear:
+                        drive(speed, 3, 1)  # Vinstri, krapp
+                    else:
+                        drive(speed, 4, 1)  # Hægri, krapp
 
-                if LeftClose and RightClose and (left_clear + right_clear) < 33:
-                    # Of þröngt — bakka fyrst
-                    send_speeds(-speed, -speed)
-                    time.sleep(0.5)
+                elif LeftClose and not RightClose:
+                    # Vinstri lokuð — beygja þétt til hægri
+                    drive(speed, 4, 1)  # Hægri, krapp
+
+                elif RightClose and not LeftClose:
+                    # Hægri lokuð — beygja þétt til vinstri
+                    drive(speed, 3, 1)  # Vinstri, krapp
+
+                else:
+                    # Allt lokað — last resort
                     stop()
-                    time.sleep(0.2)
-
-                # Skanna og snúa í bestu átt
-                snapshot = get_snapshot()
-                heading, direction = findExit(snapshot)
-                turnToExit(heading, direction)
+                    time.sleep(0.5)
+                    if left_clear + right_clear < 33:
+                        send_speeds(-speed, -speed)
+                        time.sleep(0.5)
+                        stop()
+                        time.sleep(0.5)
+                    snapshot = get_snapshot()
+                    heading, direction = findExit(snapshot)
+                    print(f"FrontStop — best exit: {heading}° → {direction}")
+                    turnToExit(heading, direction)
 
             time.sleep(0.1)
 
