@@ -137,3 +137,4 @@ def autopilot():
                         auto_calculate_turn("Vinstri", front_dist, speed)
                     else:
                         auto_calculate_turn("Hægri", front_dist, speed)
+        time.sleep(0.1)
