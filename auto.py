@@ -4,8 +4,8 @@ import time
 
 # ------Fastar------
 speed      = 150
-start_turn = 40
-sd         = 20  
+start_turn = 50
+sd         = 30  
 
 # ------ Svæði ------
 zone_a = set(range(315, 360)) | set(range(0, 46))  # Fram
@@ -78,22 +78,18 @@ def autopilot():
 
             elif FrontStop:
                 if not LeftClose and not RightClose:
-                    # Hliðar frjálsar — beygja þétt en halda áfram
                     if left_clear > right_clear:
-                        drive(speed, 3, 1)  # Vinstri, krapp
+                        turn("Vinstri", speed, 0)  # hard left, inner wheel stopped
                     else:
-                        drive(speed, 4, 1)  # Hægri, krapp
+                        turn("Hægri", speed, 0)    # hard right, inner wheel stopped
 
                 elif LeftClose and not RightClose:
-                    # Vinstri lokuð — beygja þétt til hægri
-                    drive(speed, 4, 1)  # Hægri, krapp
+                    turn("Hægri", speed, 0)
 
                 elif RightClose and not LeftClose:
-                    # Hægri lokuð — beygja þétt til vinstri
-                    drive(speed, 3, 1)  # Vinstri, krapp
+                    turn("Vinstri", speed, 0)
 
                 else:
-                    # Allt lokað — last resort
                     stop()
                     time.sleep(0.5)
                     if left_clear + right_clear < 33:
