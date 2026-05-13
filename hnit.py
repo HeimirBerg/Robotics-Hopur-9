@@ -12,21 +12,21 @@ GOAL_X = float(input("Sláðu inn vegalengd til hliðar í cm (+hægri-vinstri):
 GOAL_Y = float(input("Sláðu inn færslu áfram í cm: ")) 
 
 class RobotPos:
-    def __init__(self):
+    def __init__(self): # Upphafsstillum staðsetningu og stefnu
         self.x = 0.0
         self.y = 0.0
         self.heading = 0.0 
 
-    def update(self, dt, speed_val):
+    def update(self, dt, speed_val): # Finnur breytingu á staðsetningu
         if speed_val == 0: return
         dist = CM_PER_SEC * dt
         rad = math.radians(self.heading)
         self.x += dist * math.sin(rad)
         self.y += dist * math.cos(rad)
 
-def drive_to_coordinates(target_x, target_y):
-    pos = RobotPos()
-    start_lidar()
+def drive_to_coordinates(target_x, target_y): # Keyrum á ákveðin hnit
+    pos = RobotPos() # Staðsetning
+    start_lidar() # Kveikir á lidar
     last_time = time.time()
     
     print(f"Keyri á hnit: ({target_x}, {target_y})")
@@ -48,15 +48,14 @@ def drive_to_coordinates(target_x, target_y):
             target_heading = math.degrees(math.atan2(dx, dy)) % 360
             
             # 1. Athuga hindranir
-            front = get_distance(345, 15)
+            front = get_distance(330, 30)
             
-            if front < 40:
+            if front < 70:
                 print(f"HINDRUN ({front:.0f}cm)! Leita að leið framhjá...")
                 stop()
                 
-                # Nota föllin úr hinu skjalinu þínu:
-                snapshot = get_scan_snapshot()
-                best_angle, turn_dir = find_escape_heading(snapshot)
+                snapshot = get_scan_snapshot() # Gögn úr lidar
+                best_angle, turn_dir = find_escape_heading(snapshot) # Finnum hvert á að beygja
                 
                 # Snúa bílnum í átt að opna svæðinu
                 spin_to_heading(best_angle, turn_dir)
