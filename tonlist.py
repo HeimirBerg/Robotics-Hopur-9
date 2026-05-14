@@ -16,7 +16,8 @@ def spilatonlist(skra):
         spilari = subprocess.Popen(
             term(skra),shell=True,
             stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL)
+            stderr=subprocess.DEVNULL, 
+            stdin=subprocess.PIPE)
     except Exception as e:
         print(f"Error: {e}")
 
