@@ -7,14 +7,14 @@ import time
 # ------Fastar------
 speed      = 200
 start_turn = 130
-sd         = 50
+sd         = 30   # cm — FrontStop + hliðargreining (var 45, lækkað til að stemma við gamall kóði)
 
 STUCK_THRESHOLD = 5   # cm — hversu lítil hreyfing telst fastur
 STUCK_TIME      = 20  # fjöldi lestrar áður en við segjum að hann sé fastur
 front_history   = deque(maxlen=5)  # ← add this
 
-DRIFT_THRESHOLD = 5   # cm — hversu lítil breyting í lestri þegar keyrt er beint
-DRIFT_COUNT     = 20  # fjöldi lestrar — hversu lengi við fylgjumst með áður en við segjum fastur
+DRIFT_THRESHOLD = 8   # cm — hversu lítil breyting í lestri þegar keyrt er beint
+DRIFT_COUNT     = 25  # fjöldi lestrar — hversu lengi við fylgjumst með áður en við segjum fastur
 
 # ------ Svæði ------
 zone_a_wide   = set(range(315, 360)) | set(range(0, 46))  # Fram — vítt — snemma uppgötvun (±45°)
@@ -24,8 +24,8 @@ zone_c = set(range(135, 226))                              # Aftur
 zone_d = set(range(225, 316))                              # Vinstri
 zone_corner_r = set(range(30, 70))                         # Framhægri horn
 zone_corner_l = set(range(290, 330))                       # Framvinstri horn
-corner_sd     = 60                                         # cm — byrja að beygja þegar horn nálgast hlut
-degTime = 3.0 / 64.8                                      # Tíma fasti til að snúa bílnum
+corner_sd     = 40                                         # cm — byrja að beygja þegar horn nálgast hlut (var 60, lækkað)
+degTime = 2.0 / 64.8                                      # Tíma fasti til að snúa bílnum
 
 recent_fronts = deque(maxlen=STUCK_TIME)
 recent_all    = deque(maxlen=DRIFT_COUNT)  # fylgjast með lestrum óháð fjarlægð — grípur kyrrstöðu á opnum svæðum
@@ -40,6 +40,7 @@ def is_stuck():
 def is_drifting_stuck():
     # Virkar jafnvel þegar lestur er yfir start_turn — grípur kyrrstöðu á opnum svæðum
     # þar sem is_stuck() sér ekki neitt vegna þess að allar lestur eru "frjálsar"
+    # Notar þrönga lestur (zone_a_narrow) svo hliðarveggir kalli ekki á ranga greiningu
     if len(recent_all) < DRIFT_COUNT:
         return False
     return max(recent_all) - min(recent_all) < DRIFT_THRESHOLD
@@ -116,20 +117,24 @@ def autopilot():
             snapshot = get_snapshot()
 
             FrontClose = under(snapshot, zone_a_wide, start_turn)
-            FrontStop = under(snapshot, zone_a_narrow, sd)  # Aðeins þröngt svæði — forðast rangar niðurstöður vegna þunna hluta eins og stólsfóta
+            FrontStop  = under(snapshot, zone_a_narrow, sd)  # Aðeins þröngt svæði — forðast rangar niðurstöður vegna þunna hluta eins og stólsfóta
             RightClose = under(snapshot, zone_b, sd)
             LeftClose  = under(snapshot, zone_d, sd)
 
             right_clear = min_distance(snapshot, zone_b)
             left_clear  = min_distance(snapshot, zone_d)
-            front_dist  = min_distance(snapshot, zone_a_wide)       # nálægasta hindrun framundan
 
-            front_history.append(front_dist)
+            # Þröng lestur (±15°) notuð til að fylgjast með hreyfingu — hliðarveggir
+            # skekka ekki mælingar eins og þeir gera með zone_a_wide
+            front_dist_narrow = min_distance(snapshot, zone_a_narrow)
+            front_dist_wide   = min_distance(snapshot, zone_a_wide)   # fyrir beygju-útreikning
+
+            front_history.append(front_dist_narrow)
             smoothed_front = sum(front_history) / len(front_history)
             recent_fronts.append(smoothed_front)  # fylgjast með hreyfingu
-            recent_all.append(front_dist)          # hráar lestur — fyrir drift-greiningu
+            recent_all.append(front_dist_narrow)   # hráar þröng lestur — fyrir drift-greiningu
 
-            print(f"front: {front_dist:.0f}cm  FrontClose: {FrontClose}  FrontStop: {FrontStop}  L: {LeftClose}  R: {RightClose}")
+            print(f"front: {front_dist_narrow:.0f}cm  FrontClose: {FrontClose}  FrontStop: {FrontStop}  L: {LeftClose}  R: {RightClose}")
 
             if is_stuck() or is_drifting_stuck():
                 # ------ Fastur — finna útveg ------
@@ -138,26 +143,26 @@ def autopilot():
 
             elif not FrontStop and not FrontClose:
                 # ------ keyra áfram ------
+                # Hliðar- og horngreinig er aðeins notuð þegar framleið er frjáls
+                # Forgangsröðun: keyra beint áfram — beygja bara þegar þarf
                 CornerRightClose = under(snapshot, zone_corner_r, corner_sd)  # Framhægri horn nálægt
                 CornerLeftClose  = under(snapshot, zone_corner_l, corner_sd)  # Framvinstri horn nálægt
 
                 if LeftClose and not RightClose:
-                    auto_calculate_turn("Hægri", front_dist, speed)   # Smávegis til hægri á meðan við keyrum áfram
+                    auto_calculate_turn("Hægri", front_dist_narrow, speed)   # Smávegis til hægri á meðan við keyrum áfram
                 elif RightClose and not LeftClose:
-                    auto_calculate_turn("Vinstri", front_dist, speed)  # Smávegis til vinstri á meðan við keyrum áfram
+                    auto_calculate_turn("Vinstri", front_dist_narrow, speed)  # Smávegis til vinstri á meðan við keyrum áfram
                 elif CornerRightClose and not CornerLeftClose:
-                    auto_calculate_turn("Vinstri", front_dist, speed)  # Horn hægri nálægt — beygja smávegis til vinstri
+                    auto_calculate_turn("Vinstri", front_dist_narrow, speed)  # Horn hægri nálægt — beygja smávegis til vinstri
                 elif CornerLeftClose and not CornerRightClose:
-                    auto_calculate_turn("Hægri", front_dist, speed)   # Horn vinstri nálægt — beygja smávegis til hægri
+                    auto_calculate_turn("Hægri", front_dist_narrow, speed)   # Horn vinstri nálægt — beygja smávegis til hægri
                 else:
                     send_speeds(speed, speed)  # Keyra beint áfram
 
             elif FrontClose and not FrontStop:
                 # ------ Eitthvað framundan en enn pláss — róleg beygja ------
-                front_ref = min(
-                    min_distance(snapshot, zone_a_wide),
-                    min_distance(snapshot, zone_a_narrow)
-                )
+                # Notar þrönga lestur sem viðmið svo hliðarveggir geri ekki beygjuna skörpari en þarf
+                front_ref = min(front_dist_wide, front_dist_narrow)
                 ratio = max(0.0, min(1.0, (front_ref - sd) / (start_turn - sd)))
                 inner = int(speed * ratio)
                 if left_clear < right_clear:
