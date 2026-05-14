@@ -12,7 +12,9 @@ try:
 except Exception as e:
     print(f"CAMERA_INIT_FAILED: {e}")
     sys.exit(1)
+
 app = Flask(__name__)
+
 def generate_frames():
     while True:
         # Tökum mynd
@@ -23,6 +25,11 @@ def generate_frames():
         yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
 @app.route('/streymi')
+def streymi(): 
+    return Response(generate_frames(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/')
 def index():
     # Einföld HTML síða til að skoða streymið
     return "<html><body style='background:#222; color:white; text-align:center;'>" \
@@ -30,15 +37,10 @@ def index():
            "<img src='/streymi' style='border:2px solid red;'>" \
            "</body></html>"
 
-@app.route('/streymi')
-def streymi(): 
-    return Response(generate_frames(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
-
 if __name__ == '__main__':
-    print("Web server launching at http://10.98.208.33:5000")
+    # Síðan er á  http://10.98.208.33:5000
     try:
         # We use 0.0.0.0 to listen on all network interfaces
-        app.run(host='0.0.0.0', port=5000, threaded=True)
+        app.run(host='0.0.0.0', debug=False, use_reloader=False)
     finally:
         picam2.stop()
