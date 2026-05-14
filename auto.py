@@ -25,7 +25,7 @@ zone_d = set(range(225, 316))                              # Vinstri
 zone_corner_r = set(range(30, 70))                         # Framhægri horn
 zone_corner_l = set(range(290, 330))                       # Framvinstri horn
 corner_sd     = 40                                         # cm — byrja að beygja þegar horn nálgast hlut (var 60, lækkað)
-degTime = 1.0 / 36.3                                     # Tíma fasti til að snúa bílnum
+degTime = 1.0 / 17.1                                     # Tíma fasti til að snúa bílnum
 
 recent_fronts = deque(maxlen=STUCK_TIME)
 recent_all    = deque(maxlen=DRIFT_COUNT)  # fylgjast með lestrum óháð fjarlægð — grípur kyrrstöðu á opnum svæðum
