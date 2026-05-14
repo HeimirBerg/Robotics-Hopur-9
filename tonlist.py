@@ -14,7 +14,7 @@ def spilatonlist(skra):
     stopdamusic()
     try:
         spilari = subprocess.Popen(
-            term(skra),shell=True,
+            term(skra),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL, 
             stdin=subprocess.PIPE)
@@ -25,7 +25,7 @@ def stopdamusic():
     os.system("pkill -f mpg123")
 
 def rtonn(): # Spilum lag af handahófi
-    tonar = ["guiltynigga", "baciate", "barbie", "Adolf Hitler Speech in 1935"]
+    tonar = ["guiltynigga", "baciate", "barbie"]
     spilatonlist(random.choice(tonar))
 
 """while True:
