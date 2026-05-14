@@ -15,7 +15,7 @@ def lalli() -> None:
                                 stdout=subprocess.DEVNULL,
                                 stderr=subprocess.DEVNULL, 
                                 stdin=subprocess.PIPE) # Keyrir myndavél í bakgrunni
-    time.sleep(4)
+    time.sleep(2)
     while True:
         print("Hvað viltu að ég geri?")
         print("1 - Sjálfvirk keyrsla\n2 - Hanvirk keyrsla\n3 - Hætta")
