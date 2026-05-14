@@ -10,8 +10,8 @@ start_turn = 130
 sd         = 45
 
 STUCK_THRESHOLD = 5   # cm — hversu lítil hreyfing telst fastur
-STUCK_TIME      = 10  # fjöldi lestrar áður en við segjum að hann sé fastur
-front_history   = deque(maxlen=5)  
+STUCK_TIME      = 20  # fjöldi lestrar áður en við segjum að hann sé fastur
+front_history   = deque(maxlen=5)  # ← add this
 
 # ------ Svæði ------
 zone_a_wide   = set(range(315, 360)) | set(range(0, 46))  # Fram — vítt — snemma uppgötvun (±45°)
@@ -22,7 +22,7 @@ zone_d = set(range(225, 316))                              # Vinstri
 zone_corner_r = set(range(30, 70))                         # Framhægri horn
 zone_corner_l = set(range(290, 330))                       # Framvinstri horn
 corner_sd     = 60                                         # cm — byrja að beygja þegar horn nálgast hlut
-degTime = 1.0 / 64.8                                      # Tíma fasti til að snúa bílnum
+degTime = 2.0 / 64.8                                      # Tíma fasti til að snúa bílnum
 
 recent_fronts = deque(maxlen=STUCK_TIME)
 
@@ -89,7 +89,7 @@ def turnToExit(heading, direction):
         dir_num = 3
     if angle < 2:
         return
-    duration = angle * degTime * 4
+    duration = angle * degTime
     print(f"Spinning {direction} {angle}° → {duration:.3f}s")
     drive(255, dir_num, -1)
     time.sleep(duration)
