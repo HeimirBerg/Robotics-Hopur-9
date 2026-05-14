@@ -10,8 +10,8 @@ start_turn = 130
 sd         = 45
 
 STUCK_THRESHOLD = 5   # cm — hversu lítil hreyfing telst fastur
-STUCK_TIME      = 10  # fjöldi lestrar áður en við segjum að hann sé fastur
-front_history   = deque(maxlen=5)
+STUCK_TIME      = 20  # fjöldi lestrar áður en við segjum að hann sé fastur
+front_history   = deque(maxlen=5)  # ← add this
 
 # ------ Svæði ------
 zone_a_wide   = set(range(315, 360)) | set(range(0, 46))  # Fram — vítt — snemma uppgötvun (±45°)
@@ -22,24 +22,22 @@ zone_d = set(range(225, 316))                              # Vinstri
 zone_corner_r = set(range(30, 70))                         # Framhægri horn
 zone_corner_l = set(range(290, 330))                       # Framvinstri horn
 corner_sd     = 60                                         # cm — byrja að beygja þegar horn nálgast hlut
-degTime = 3.0 / 64.8                                      # Tíma fasti til að snúa bílnum
+degTime = 2.0 / 64.8                                      # Tíma fasti til að snúa bílnum
 
 recent_fronts = deque(maxlen=STUCK_TIME)
 
 def is_stuck():
     if len(recent_fronts) < STUCK_TIME:
         return False
-    # Fjarlægt bailout — hann getur verið fastur jafnvel þótt framundan sé opið
+    if min(recent_fronts) > start_turn:  # allar lestur frjálsar — ekki fastur
+        return False
     return max(recent_fronts) - min(recent_fronts) < STUCK_THRESHOLD
 
 def escape_stuck(snapshot):
     recent_fronts.clear()
     print("Fastur! Hætti og skanna...")
     stop()
-    time.sleep(2.0)  # Bíður lengur — LiDAR þarf tíma til að fylla scan eftir stop
-
-    # Fersk mynd eftir stop — eldri snapshot getur verið úrelt
-    snapshot = get_snapshot()
+    time.sleep(1.0)
 
     # Bakka ef pláss er að aftan
     rear = min_distance(snapshot, zone_c)
@@ -55,22 +53,14 @@ def escape_stuck(snapshot):
     # Skanna og snúa í bestu átt
     snapshot = get_snapshot()
     heading, direction = findExit(snapshot)
-    if direction is not None:
-        turnToExit(heading, direction)
-    else:
-        # FIX 3: Neyðarúrræði — snúast 180° í stað þess að keyra beint í vegginn aftur
-        print("Gat ekki fundið útveg — snýst 180° sem neyðarúrræði...")
-        drive(255, 4, -1)  # snúast til hægri
-        time.sleep(180 * degTime)
-        stop()
-        time.sleep(0.4)
+    turnToExit(heading, direction)
 
-    # Keyra beint áfram þar til hindrun kemur í sjón — nota vítt svæði til að grípa horn
+    # Keyra beint áfram þar til hindrun kemur í sjón
     print("Keyri beint til að losna...")
     deadline = time.time() + 3.0
     while time.time() < deadline:
         fresh = get_snapshot()
-        if min_distance(fresh, zone_a_wide) <= start_turn:
+        if min_distance(fresh, zone_a_narrow) <= start_turn:
             break
         send_speeds(speed, speed)
         time.sleep(0.05)
@@ -78,7 +68,6 @@ def escape_stuck(snapshot):
     print("Komst út.")
 
 def findExit(snapshot):
-    # FIX 1: Vantar lestur → MaxRange — opið rými (>300cm) er skýrt, ekki 80cm hindrun
     full = [snapshot.get(a, MaxRange) for a in range(360)]
     # Lágmark í glugga — tryggir að öll leiðin sé frjáls, ekki bara meðaltal
     # Meðaltal getur villst af nokkrum fjarlægum lesturum við brún veggjar
@@ -86,37 +75,8 @@ def findExit(snapshot):
         min(full[(a + i) % 360] for i in range(-15, 16))
         for a in range(360)
     ]
-
-    if max(min_in_window) <= 80:
-        # Snapshot of tæmt — vantar gögn til að finna útveg
-        print(f"Snapshot of tæmt ({max(min_in_window):.0f}cm) — bíð eftir betri gögnum")
-        return 0, None
-
-    # Finna næsta horn við 0° með næga clearance — ekki þær sem benda beint í vegginn
-    MIN_CLEARANCE      = 100  # cm — lágmarkspláss til að teljast góður útveg
-    MIN_ANGLE_FROM_FRONT = 30  # ° — lágmarkshorn frá 0° (þar sem hindrunin var)
-
-    def angular_dist(a):
-        # Fjarlægð frá 0° (beint fram) — 180° er lengst í burtu
-        return a if a <= 180 else 360 - a
-
-    # Fyrsta val: skýr leið og nógu langt frá veggnum sem við höfðum í
-    viable = [a for a in range(360)
-              if min_in_window[a] >= MIN_CLEARANCE
-              and angular_dist(a) >= MIN_ANGLE_FROM_FRONT]
-
-    if not viable:
-        # Seinni tilraun: sleppum horn-skilyrðinu ef ekkert finnst
-        viable = [a for a in range(360) if min_in_window[a] >= MIN_CLEARANCE]
-
-    if viable:
-        best_angle = min(viable, key=angular_dist)  # Næsti útvegur, ekki stærsti
-    else:
-        # Enginn útvegur með næga clearance — velja opnasta horn sem er ekki beint fram
-        candidates = [a for a in range(360) if angular_dist(a) >= MIN_ANGLE_FROM_FRONT]
-        best_angle = max(candidates, key=lambda a: min_in_window[a])
-
-    direction = "Hægri" if 1 <= best_angle <= 179 else "Vinstri"
+    best_angle = max(range(360), key=lambda a: min_in_window[a])
+    direction  = "Hægri" if 1 <= best_angle <= 179 else "Vinstri"
     print(f"Best exit: {best_angle}° ({min_in_window[best_angle]:.0f}cm min) → {direction}")
     return best_angle, direction
 
@@ -127,7 +87,7 @@ def turnToExit(heading, direction):
     else:
         angle   = 360 - heading
         dir_num = 3
-    if angle < 2 or angle > 358:  # Nær beint á útveg — engin þörf á snúningi
+    if angle < 2:
         return
     duration = angle * degTime
     print(f"Spinning {direction} {angle}° → {duration:.3f}s")
@@ -141,12 +101,7 @@ def autopilot():
     print("Autopilot running.")
     try:
         while True:
-            # FIX 2: Bíða eftir fullnægjandi scan (a.m.k. 180 horn) áður en við tökum ákvörðun
-            for _ in range(10):
-                snapshot = get_snapshot()
-                if len(snapshot) >= 180:
-                    break
-                time.sleep(0.3)
+            snapshot = get_snapshot()
 
             FrontClose = under(snapshot, zone_a_wide, start_turn)
             FrontStop = under(snapshot, zone_a_narrow, sd)  # Aðeins þröngt svæði — forðast rangar niðurstöður vegna þunna hluta eins og stólsfóta
@@ -159,30 +114,30 @@ def autopilot():
 
             front_history.append(front_dist)
             smoothed_front = sum(front_history) / len(front_history)
-            recent_fronts.append(front_dist)  # fylgjast með hreyfingu — hrá gildi til að varðveita náttúrulega dreifni
+            recent_fronts.append(smoothed_front)  # fylgjast með hreyfingu
 
             print(f"front: {front_dist:.0f}cm  FrontClose: {FrontClose}  FrontStop: {FrontStop}  L: {LeftClose}  R: {RightClose}")
 
-            if not FrontStop and not FrontClose:
-                # ------ keyra áfram ------
-                if is_stuck():
-                    # Fastur í opnu rými — hjólín snúast ekki — finna útveg
-                    print("Fastur! Skanna fyrir útveg...")
-                    escape_stuck(snapshot)
-                else:
-                    CornerRightClose = under(snapshot, zone_corner_r, corner_sd)  # Framhægri horn nálægt
-                    CornerLeftClose  = under(snapshot, zone_corner_l, corner_sd)  # Framvinstri horn nálægt
+            if is_stuck():
+                # ------ Fastur — finna útveg ------
+                print("Fastur! Skanna fyrir útveg...")
+                escape_stuck(snapshot)
 
-                    if LeftClose and not RightClose:
-                        auto_calculate_turn("Hægri", front_dist, speed)   # Smávegis til hægri á meðan við keyrum áfram
-                    elif RightClose and not LeftClose:
-                        auto_calculate_turn("Vinstri", front_dist, speed)  # Smávegis til vinstri á meðan við keyrum áfram
-                    elif CornerRightClose and not CornerLeftClose:
-                        auto_calculate_turn("Vinstri", front_dist, speed)  # Horn hægri nálægt — beygja smávegis til vinstri
-                    elif CornerLeftClose and not CornerRightClose:
-                        auto_calculate_turn("Hægri", front_dist, speed)   # Horn vinstri nálægt — beygja smávegis til hægri
-                    else:
-                        send_speeds(speed, speed)  # Keyra beint áfram
+            elif not FrontStop and not FrontClose:
+                # ------ keyra áfram ------
+                CornerRightClose = under(snapshot, zone_corner_r, corner_sd)  # Framhægri horn nálægt
+                CornerLeftClose  = under(snapshot, zone_corner_l, corner_sd)  # Framvinstri horn nálægt
+
+                if LeftClose and not RightClose:
+                    auto_calculate_turn("Hægri", front_dist, speed)   # Smávegis til hægri á meðan við keyrum áfram
+                elif RightClose and not LeftClose:
+                    auto_calculate_turn("Vinstri", front_dist, speed)  # Smávegis til vinstri á meðan við keyrum áfram
+                elif CornerRightClose and not CornerLeftClose:
+                    auto_calculate_turn("Vinstri", front_dist, speed)  # Horn hægri nálægt — beygja smávegis til vinstri
+                elif CornerLeftClose and not CornerRightClose:
+                    auto_calculate_turn("Hægri", front_dist, speed)   # Horn vinstri nálægt — beygja smávegis til hægri
+                else:
+                    send_speeds(speed, speed)  # Keyra beint áfram
 
             elif FrontClose and not FrontStop:
                 # ------ Eitthvað framundan en enn pláss — róleg beygja ------
@@ -192,39 +147,15 @@ def autopilot():
                 )
                 ratio = max(0.0, min(1.0, (front_ref - sd) / (start_turn - sd)))
                 inner = int(speed * ratio)
-
-                # Bæta við horn-fjarlægðir svo hlutir í 30-44° blintu blettinum séu greindir
-                corner_r_dist = min_distance(snapshot, zone_corner_r)
-                corner_l_dist = min_distance(snapshot, zone_corner_l)
-                effective_right = min(right_clear, corner_r_dist)
-                effective_left  = min(left_clear,  corner_l_dist)
-
-                if effective_left < effective_right:
+                if left_clear < right_clear:
                     turn("Hægri", speed, inner)    # Beygja smá til hægri
                 else:
                     turn("Vinstri", speed, inner)  # Beygja smá til vinstri
 
             elif FrontStop:
-                # Hindrun of nálægt — reyna skörpa snúning á staðnum fyrst (án þess að bakka)
-                stop()
-                time.sleep(0.3)
-                fresh = get_snapshot()
-                r = min_distance(fresh, zone_b)
-                l = min_distance(fresh, zone_d)
-                turn_dir = "Hægri" if r > l else "Vinstri"
-                dir_num  = 4 if turn_dir == "Hægri" else 3
-                print(f"FrontStop — snúast {turn_dir} á staðnum (L:{l:.0f}cm  R:{r:.0f}cm)...")
-                drive(255, dir_num, -1)   # byrja snúning
-                deadline = time.time() + 3.0
-                while time.time() < deadline:
-                    time.sleep(0.1)
-                    fresh = get_snapshot()
-                    if not under(fresh, zone_a_narrow, sd):
-                        break
-                stop()
-                # Ef framundan er enn lokað eftir snúning — nota fullt escape
-                if under(get_snapshot(), zone_a_narrow, sd):
-                    escape_stuck(snapshot)
+                # Stoppa og skanna alltaf — tryggir að hann finni útveg
+                # jafnvel í U-laga rými þar sem hliðarveggir eru ekki nærri
+                escape_stuck(snapshot)
 
             time.sleep(0.1)
 
