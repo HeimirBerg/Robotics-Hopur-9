@@ -182,10 +182,10 @@ def analog_control(device_path: str) -> None:
                     if button.keycode == "BTN_THUMBR":
                         raise KeyboardInterrupt
                     
-                    if button.keycode == "BTN_EAST":
+                    if "BTN_EAST" in button.keycode:
                         stopdamusic()
                     
-                    if button.keycode == "BTN_NORTH":
+                    if "BTN_NORTH" in button.keycode:
                         spilatonlist("blurred")
                         print("Ýtt á NORTH - Reyni að spila...")
                     
