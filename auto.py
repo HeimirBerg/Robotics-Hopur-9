@@ -13,11 +13,14 @@ STUCK_TIME      = 10  # fjöldi lestrar áður en við segjum að hann sé fastu
 front_history   = deque(maxlen=5)  # ← add this
 
 # ------ Svæði ------
-zone_a_wide   = set(range(290, 360)) | set(range(0, 70))  # Fram — vítt — snemma uppgötvun
+zone_a_wide   = set(range(315, 360)) | set(range(0, 46))  # Fram — vítt — snemma uppgötvun (±45°)
 zone_a_narrow = set(range(345, 360)) | set(range(0, 16))  # Fram — þröngt — beint framundan
 zone_b = set(range(45, 136))                               # Hægri
 zone_c = set(range(135, 226))                              # Aftur
 zone_d = set(range(225, 316))                              # Vinstri
+zone_corner_r = set(range(30, 70))                         # Framhægri horn
+zone_corner_l = set(range(290, 330))                       # Framvinstri horn
+corner_sd     = 60                                         # cm — byrja að beygja þegar horn nálgast hlut
 degTime = 1.0 / 64.8                                      # Tíma fasti til að snúa bílnum
 
 recent_fronts = deque(maxlen=STUCK_TIME)
@@ -119,10 +122,17 @@ def autopilot():
 
             elif not FrontStop and not FrontClose:
                 # ------ keyra áfram ------
+                CornerRightClose = under(snapshot, zone_corner_r, corner_sd)  # Framhægri horn nálægt
+                CornerLeftClose  = under(snapshot, zone_corner_l, corner_sd)  # Framvinstri horn nálægt
+
                 if LeftClose and not RightClose:
                     auto_calculate_turn("Hægri", front_dist, speed)   # Smávegis til hægri á meðan við keyrum áfram
                 elif RightClose and not LeftClose:
                     auto_calculate_turn("Vinstri", front_dist, speed)  # Smávegis til vinstri á meðan við keyrum áfram
+                elif CornerRightClose and not CornerLeftClose:
+                    auto_calculate_turn("Vinstri", front_dist, speed)  # Horn hægri nálægt — beygja smávegis til vinstri
+                elif CornerLeftClose and not CornerRightClose:
+                    auto_calculate_turn("Hægri", front_dist, speed)   # Horn vinstri nálægt — beygja smávegis til hægri
                 else:
                     send_speeds(speed, speed)  # Keyra beint áfram
 
