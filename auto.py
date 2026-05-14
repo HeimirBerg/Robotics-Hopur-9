@@ -14,7 +14,7 @@ STUCK_TIME      = 15  # fjöldi lestrar áður en við segjum að hann sé fastu
 front_history   = deque(maxlen=5)  # ← add this
 
 # ------ Svæði ------
-zone_a_wide   = set(range(315, 360)) | set(range(0, 46))  # Fram — vítt — snemma uppgötvun
+zone_a_wide   = set(range(290, 360)) | set(range(0, 70))  # Fram — vítt — snemma uppgötvun
 zone_a_narrow = set(range(345, 360)) | set(range(0, 16))  # Fram — þröngt — beint framundan
 zone_b = set(range(45, 136))                               # Hægri
 zone_c = set(range(135, 226))                              # Aftur
