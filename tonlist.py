@@ -2,6 +2,7 @@
 import random
 import subprocess
 import time
+import os
 
 spilari = None #Hátalarinn
 
@@ -20,10 +21,7 @@ def spilatonlist(skra):
         print(f"Error: {e}")
 
 def stopdamusic():
-    global spilari
-    if spilari is not None:
-        spilari.terminate()
-        spilari = None
+    os.system("pkill -f mpg123")
 
 def rtonn(): # Spilum lag af handahófi
     tonar = ["guiltynigga", "baciate", "barbie", "Adolf Hitler Speech in 1935"]
