@@ -4,7 +4,7 @@ from collections import deque
 import time
 
 # ------Fastar------
-speed      = 255
+speed      = 200
 start_turn = 120
 sd         = 50
 
