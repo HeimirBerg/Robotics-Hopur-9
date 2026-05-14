@@ -1,7 +1,6 @@
 """Aðal skráin sem Lalli keyrir"""
 
 import subprocess
-from myndavel import *
 from movement import stop
 from manualdrive import manual
 from auto import *
