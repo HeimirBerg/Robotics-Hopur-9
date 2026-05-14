@@ -6,7 +6,7 @@ import time
 # ------Fastar------
 speed      = 200
 start_turn = 120
-sd         = 50
+sd         = 25
 
 STUCK_THRESHOLD = 5   # cm — hversu lítil hreyfing telst fastur
 STUCK_TIME      = 15  # fjöldi lestrar áður en við segjum að hann sé fastur
@@ -98,7 +98,7 @@ def autopilot():
             snapshot = get_snapshot()
 
             FrontClose = under(snapshot, zone_a_wide, start_turn)
-            FrontStop = under(snapshot, zone_a_narrow, sd) or under(snapshot, zone_a_wide, sd)
+            FrontStop = under(snapshot, zone_a_narrow, sd)  # Aðeins þröngt svæði — forðast rangar niðurstöður vegna þunna hluta eins og stólsfóta
             RightClose = under(snapshot, zone_b, sd)
             LeftClose  = under(snapshot, zone_d, sd)
 
