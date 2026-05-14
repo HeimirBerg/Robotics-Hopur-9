@@ -29,7 +29,7 @@ def generate_frames():
 def index():
     # Einföld HTML síða til að skoða streymið
     return "<html><body style='background:#222; color:white; text-align:center;'>" \
-           "<h1>Robotics-Hopur-9 Live</h1>" \
+           "<h1>Bakkmyndavél</h1>" \
            "<img src='/streymi' style='border:2px solid red;'>" \
            "</body></html>"
 
