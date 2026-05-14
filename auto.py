@@ -128,10 +128,16 @@ def autopilot():
 
             elif FrontClose and not FrontStop:
                 # ------ Eitthvað framundan en enn pláss — rólegt beygja ------
-                if left_clear > right_clear:
-                    auto_calculate_turn("Vinstri", front_dist, speed)
+                front_ref = min(
+                    min_distance(snapshot, zone_a_wide),
+                    min_distance(snapshot, zone_a_narrow)
+                )
+                ratio = max(0.0, min(1.0, (front_ref - sd) / (start_turn - sd)))
+                inner = int(speed * ratio)
+                if left_clear < right_clear:
+                    turn("Vinstri", speed, inner)  # Beygja smá til vinstri
                 else:
-                    auto_calculate_turn("Hægri", front_dist, speed)
+                    turn("Hægri", speed, inner)    # Beygja smá til hægri
 
             elif FrontStop:
                 if not LeftClose and not RightClose:
