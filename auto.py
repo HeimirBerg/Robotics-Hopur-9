@@ -58,7 +58,12 @@ def escape_stuck(snapshot):
     if direction is not None:
         turnToExit(heading, direction)
     else:
-        print("Gat ekki fundið útveg — reyni aftur í næstu umferð.")
+        # FIX 3: Neyðarúrræði — snúast 180° í stað þess að keyra beint í vegginn aftur
+        print("Gat ekki fundið útveg — snýst 180° sem neyðarúrræði...")
+        drive(255, 4, -1)  # snúast til hægri
+        time.sleep(180 * degTime)
+        stop()
+        time.sleep(0.4)
 
     # Keyra beint áfram þar til hindrun kemur í sjón — nota vítt svæði til að grípa horn
     print("Keyri beint til að losna...")
@@ -73,8 +78,8 @@ def escape_stuck(snapshot):
     print("Komst út.")
 
 def findExit(snapshot):
-    # Vantar lestur → 80cm — forðast að fara í blinda bletti
-    full = [snapshot.get(a, 80) for a in range(360)]
+    # FIX 1: Vantar lestur → MaxRange — opið rými (>300cm) er skýrt, ekki 80cm hindrun
+    full = [snapshot.get(a, MaxRange) for a in range(360)]
     # Lágmark í glugga — tryggir að öll leiðin sé frjáls, ekki bara meðaltal
     # Meðaltal getur villst af nokkrum fjarlægum lesturum við brún veggjar
     min_in_window = [
@@ -127,7 +132,12 @@ def autopilot():
     print("Autopilot running.")
     try:
         while True:
-            snapshot = get_snapshot()
+            # FIX 2: Bíða eftir fullnægjandi scan (a.m.k. 180 horn) áður en við tökum ákvörðun
+            for _ in range(10):
+                snapshot = get_snapshot()
+                if len(snapshot) >= 180:
+                    break
+                time.sleep(0.3)
 
             FrontClose = under(snapshot, zone_a_wide, start_turn)
             FrontStop = under(snapshot, zone_a_narrow, sd)  # Aðeins þröngt svæði — forðast rangar niðurstöður vegna þunna hluta eins og stólsfóta
