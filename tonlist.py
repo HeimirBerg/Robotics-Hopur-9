@@ -14,7 +14,7 @@ def spilatonlist(skra):
     stopdamusic()
     try:
         spilari = subprocess.Popen(
-            term(skra),
+            term(skra),shell=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL, 
             stdin=subprocess.PIPE)
