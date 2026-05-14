@@ -9,7 +9,7 @@ start_turn = 120
 sd         = 35
 
 STUCK_THRESHOLD = 5   # cm — hversu lítil hreyfing telst fastur
-STUCK_TIME      = 15  # fjöldi lestrar áður en við segjum að hann sé fastur
+STUCK_TIME      = 10  # fjöldi lestrar áður en við segjum að hann sé fastur
 front_history   = deque(maxlen=5)  # ← add this
 
 # ------ Svæði ------
