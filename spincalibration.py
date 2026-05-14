@@ -1,7 +1,7 @@
 from movement import drive, stop
 import time
 
-degTime = 1.0 / 64.8  # updated calibration
+degTime = 1.0 / 34.6  # calculated from last run: 180° command → 96° actual at 1.0/64.8
 
 TARGET_DEGREES = 180
 duration = TARGET_DEGREES * degTime
