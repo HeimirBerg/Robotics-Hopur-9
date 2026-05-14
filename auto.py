@@ -36,7 +36,7 @@ def escape_stuck(snapshot):
     recent_fronts.clear()
     print("Fastur! Hætti og skanna...")
     stop()
-    time.sleep(1.0)
+    time.sleep(2.0)  # Bíður lengur — LiDAR þarf tíma til að fylla scan eftir stop
 
     # Fersk mynd eftir stop — eldri snapshot getur verið úrelt
     snapshot = get_snapshot()
@@ -60,12 +60,12 @@ def escape_stuck(snapshot):
     else:
         print("Gat ekki fundið útveg — reyni aftur í næstu umferð.")
 
-    # Keyra beint áfram þar til hindrun kemur í sjón
+    # Keyra beint áfram þar til hindrun kemur í sjón — nota vítt svæði til að grípa horn
     print("Keyri beint til að losna...")
     deadline = time.time() + 3.0
     while time.time() < deadline:
         fresh = get_snapshot()
-        if min_distance(fresh, zone_a_narrow) <= start_turn:
+        if min_distance(fresh, zone_a_wide) <= start_turn:
             break
         send_speeds(speed, speed)
         time.sleep(0.05)
@@ -173,7 +173,14 @@ def autopilot():
                 )
                 ratio = max(0.0, min(1.0, (front_ref - sd) / (start_turn - sd)))
                 inner = int(speed * ratio)
-                if left_clear < right_clear:
+
+                # Bæta við horn-fjarlægðir svo hlutir í 30-44° blintu blettinum séu greindir
+                corner_r_dist = min_distance(snapshot, zone_corner_r)
+                corner_l_dist = min_distance(snapshot, zone_corner_l)
+                effective_right = min(right_clear, corner_r_dist)
+                effective_left  = min(left_clear,  corner_l_dist)
+
+                if effective_left < effective_right:
                     turn("Hægri", speed, inner)    # Beygja smá til hægri
                 else:
                     turn("Vinstri", speed, inner)  # Beygja smá til vinstri
