@@ -32,10 +32,7 @@ def streymi():
 @app.route('/')
 def index():
     # Einföld HTML síða til að skoða streymið
-    return "<html><body style='background:#222; color:white; text-align:center;'>" \
-           "<h1>Robotics-Hopur-9 Live</h1>" \
-           "<img src='/streymi' style='border:2px solid red;'>" \
-           "</body></html>"
+    return "<html><body><img src='/video_feed'></body></html>"
 
 if __name__ == '__main__':
     # Síðan er á  http://10.98.208.33:5000
