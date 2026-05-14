@@ -186,6 +186,7 @@ def analog_control(device_path: str) -> None:
                     
                     if button.keycode == "BTN_NORTH":
                         spilatonlist("blurred")
+                        print("Ýtt á NORTH - Reyni að spila...")
                     
             # Les analog merki og skrái í uppfletti töfluna "axes"
             if event.type == evdev.ecodes.EV_ABS:
