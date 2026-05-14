@@ -11,7 +11,7 @@ sd         = 45
 
 STUCK_THRESHOLD = 5   # cm — hversu lítil hreyfing telst fastur
 STUCK_TIME      = 10  # fjöldi lestrar áður en við segjum að hann sé fastur
-front_history   = deque(maxlen=5)  
+front_history   = deque(maxlen=5)
 
 # ------ Svæði ------
 zone_a_wide   = set(range(315, 360)) | set(range(0, 46))  # Fram — vítt — snemma uppgötvun (±45°)
@@ -22,7 +22,7 @@ zone_d = set(range(225, 316))                              # Vinstri
 zone_corner_r = set(range(30, 70))                         # Framhægri horn
 zone_corner_l = set(range(290, 330))                       # Framvinstri horn
 corner_sd     = 60                                         # cm — byrja að beygja þegar horn nálgast hlut
-degTime = 1.0 / 64.8                                      # Tíma fasti til að snúa bílnum
+degTime = 3.0 / 64.8                                      # Tíma fasti til að snúa bílnum
 
 recent_fronts = deque(maxlen=STUCK_TIME)
 
@@ -37,6 +37,9 @@ def escape_stuck(snapshot):
     print("Fastur! Hætti og skanna...")
     stop()
     time.sleep(1.0)
+
+    # Fersk mynd eftir stop — eldri snapshot getur verið úrelt
+    snapshot = get_snapshot()
 
     # Bakka ef pláss er að aftan
     rear = min_distance(snapshot, zone_c)
@@ -67,7 +70,8 @@ def escape_stuck(snapshot):
     print("Komst út.")
 
 def findExit(snapshot):
-    full = [snapshot.get(a, MaxRange) for a in range(360)]
+    # Vantar lestur → 80cm — forðast að fara í blinda bletti
+    full = [snapshot.get(a, 80) for a in range(360)]
     # Lágmark í glugga — tryggir að öll leiðin sé frjáls, ekki bara meðaltal
     # Meðaltal getur villst af nokkrum fjarlægum lesturum við brún veggjar
     min_in_window = [
@@ -88,7 +92,7 @@ def turnToExit(heading, direction):
         dir_num = 3
     if angle < 2:
         return
-    duration = angle * degTime * 4
+    duration = angle * degTime
     print(f"Spinning {direction} {angle}° → {duration:.3f}s")
     drive(255, dir_num, -1)
     time.sleep(duration)
@@ -117,26 +121,26 @@ def autopilot():
 
             print(f"front: {front_dist:.0f}cm  FrontClose: {FrontClose}  FrontStop: {FrontStop}  L: {LeftClose}  R: {RightClose}")
 
-            if is_stuck():
-                # ------ Fastur — finna útveg ------
-                print("Fastur! Skanna fyrir útveg...")
-                escape_stuck(snapshot)
-
-            elif not FrontStop and not FrontClose:
+            if not FrontStop and not FrontClose:
                 # ------ keyra áfram ------
-                CornerRightClose = under(snapshot, zone_corner_r, corner_sd)  # Framhægri horn nálægt
-                CornerLeftClose  = under(snapshot, zone_corner_l, corner_sd)  # Framvinstri horn nálægt
-
-                if LeftClose and not RightClose:
-                    auto_calculate_turn("Hægri", front_dist, speed)   # Smávegis til hægri á meðan við keyrum áfram
-                elif RightClose and not LeftClose:
-                    auto_calculate_turn("Vinstri", front_dist, speed)  # Smávegis til vinstri á meðan við keyrum áfram
-                elif CornerRightClose and not CornerLeftClose:
-                    auto_calculate_turn("Vinstri", front_dist, speed)  # Horn hægri nálægt — beygja smávegis til vinstri
-                elif CornerLeftClose and not CornerRightClose:
-                    auto_calculate_turn("Hægri", front_dist, speed)   # Horn vinstri nálægt — beygja smávegis til hægri
+                if is_stuck():
+                    # Fastur í opnu rými — hjólín snúast ekki — finna útveg
+                    print("Fastur! Skanna fyrir útveg...")
+                    escape_stuck(snapshot)
                 else:
-                    send_speeds(speed, speed)  # Keyra beint áfram
+                    CornerRightClose = under(snapshot, zone_corner_r, corner_sd)  # Framhægri horn nálægt
+                    CornerLeftClose  = under(snapshot, zone_corner_l, corner_sd)  # Framvinstri horn nálægt
+
+                    if LeftClose and not RightClose:
+                        auto_calculate_turn("Hægri", front_dist, speed)   # Smávegis til hægri á meðan við keyrum áfram
+                    elif RightClose and not LeftClose:
+                        auto_calculate_turn("Vinstri", front_dist, speed)  # Smávegis til vinstri á meðan við keyrum áfram
+                    elif CornerRightClose and not CornerLeftClose:
+                        auto_calculate_turn("Vinstri", front_dist, speed)  # Horn hægri nálægt — beygja smávegis til vinstri
+                    elif CornerLeftClose and not CornerRightClose:
+                        auto_calculate_turn("Hægri", front_dist, speed)   # Horn vinstri nálægt — beygja smávegis til hægri
+                    else:
+                        send_speeds(speed, speed)  # Keyra beint áfram
 
             elif FrontClose and not FrontStop:
                 # ------ Eitthvað framundan en enn pláss — róleg beygja ------
