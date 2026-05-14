@@ -9,8 +9,8 @@ def term(skra): # Notum þetta fall til að skrifa
     return f"mpg123 -a plughw:3,0 --mono \"music/{skra}.mp3\""
 
 def spilatonlist(skra):
-    global spilari
     stopdamusic()
+    global spilari
     try:
         spilari = subprocess.Popen(
             term(skra),shell=True,
