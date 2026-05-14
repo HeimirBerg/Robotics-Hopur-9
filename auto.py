@@ -11,7 +11,7 @@ sd         = 45
 
 STUCK_THRESHOLD = 5   # cm — hversu lítil hreyfing telst fastur
 STUCK_TIME      = 10  # fjöldi lestrar áður en við segjum að hann sé fastur
-front_history   = deque(maxlen=5)  # ← add this
+front_history   = deque(maxlen=5)  
 
 # ------ Svæði ------
 zone_a_wide   = set(range(315, 360)) | set(range(0, 46))  # Fram — vítt — snemma uppgötvun (±45°)
@@ -29,8 +29,7 @@ recent_fronts = deque(maxlen=STUCK_TIME)
 def is_stuck():
     if len(recent_fronts) < STUCK_TIME:
         return False
-    if min(recent_fronts) > start_turn:  # allar lestur frjálsar — ekki fastur
-        return False
+    # Fjarlægt bailout — hann getur verið fastur jafnvel þótt framundan sé opið
     return max(recent_fronts) - min(recent_fronts) < STUCK_THRESHOLD
 
 def escape_stuck(snapshot):
