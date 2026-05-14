@@ -172,7 +172,6 @@ def analog_control(device_path: str) -> None:
             # Les takka
             if event.type == evdev.ecodes.EV_KEY:
                 button = evdev.categorize(event)
-                print(f"Þú ýttir á: {button.keycode} | Gildi: {button.keystate}")
                 if button.keystate == button.key_down:
                     
                     if button.keycode == "BTN_TR":
