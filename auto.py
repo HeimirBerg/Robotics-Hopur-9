@@ -55,7 +55,10 @@ def escape_stuck(snapshot):
     # Skanna og snúa í bestu átt
     snapshot = get_snapshot()
     heading, direction = findExit(snapshot)
-    turnToExit(heading, direction)
+    if direction is not None:
+        turnToExit(heading, direction)
+    else:
+        print("Gat ekki fundið útveg — reyni aftur í næstu umferð.")
 
     # Keyra beint áfram þar til hindrun kemur í sjón
     print("Keyri beint til að losna...")
@@ -78,8 +81,28 @@ def findExit(snapshot):
         min(full[(a + i) % 360] for i in range(-15, 16))
         for a in range(360)
     ]
-    best_angle = max(range(360), key=lambda a: min_in_window[a])
-    direction  = "Hægri" if 1 <= best_angle <= 179 else "Vinstri"
+
+    if max(min_in_window) <= 80:
+        # Snapshot of tæmt — vantar gögn til að finna útveg
+        print(f"Snapshot of tæmt ({max(min_in_window):.0f}cm) — bíð eftir betri gögnum")
+        return 0, None
+
+    # Finna næsta horn við 0° með næga clearance — ekki þarf lengsta leið, bara næsta
+    MIN_CLEARANCE = 100  # cm — lágmarkspláss til að teljast góður útveg
+
+    def angular_dist(a):
+        # Fjarlægð frá 0° (beint fram) — 180° er lengst í burtu
+        return a if a <= 180 else 360 - a
+
+    viable = [a for a in range(360) if min_in_window[a] >= MIN_CLEARANCE]
+
+    if viable:
+        best_angle = min(viable, key=angular_dist)  # Næsti útvegur, ekki stærsti
+    else:
+        # Enginn útvegur með næga clearance — velja opnasta horn sem fallback
+        best_angle = max(range(360), key=lambda a: min_in_window[a])
+
+    direction = "Hægri" if 1 <= best_angle <= 179 else "Vinstri"
     print(f"Best exit: {best_angle}° ({min_in_window[best_angle]:.0f}cm min) → {direction}")
     return best_angle, direction
 
@@ -90,7 +113,7 @@ def turnToExit(heading, direction):
     else:
         angle   = 360 - heading
         dir_num = 3
-    if angle < 2:
+    if angle < 2 or angle > 358:  # Nær beint á útveg — engin þörf á snúningi
         return
     duration = angle * degTime
     print(f"Spinning {direction} {angle}° → {duration:.3f}s")
@@ -117,7 +140,7 @@ def autopilot():
 
             front_history.append(front_dist)
             smoothed_front = sum(front_history) / len(front_history)
-            recent_fronts.append(smoothed_front)  # fylgjast með hreyfingu
+            recent_fronts.append(front_dist)  # fylgjast með hreyfingu — hrá gildi til að varðveita náttúrulega dreifni
 
             print(f"front: {front_dist:.0f}cm  FrontClose: {FrontClose}  FrontStop: {FrontStop}  L: {LeftClose}  R: {RightClose}")
 
