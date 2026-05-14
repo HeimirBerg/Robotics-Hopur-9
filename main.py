@@ -12,9 +12,7 @@ def lalli() -> None:
     """Fallið hans Lalla"""
     
     print("\n=== Hæ, hæ, ég er Lalli Róbóti ===\n")
-
-    """subprocess.Popen("python3 myndavel.py")""" # Keyrir myndavél í bakgrunni
-
+    subprocess.Popen("python3 myndavel.py") # Keyrir myndavél í bakgrunni
     while True:
         print("Hvað viltu að ég geri?")
         print("1 - Sjálfvirk keyrsla\n2 - Hanvirk keyrsla\n3 - Hætta")
