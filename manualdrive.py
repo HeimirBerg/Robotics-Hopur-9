@@ -10,6 +10,7 @@ import evdev  # type: ignore
 import time
 
 import movement as m
+from tonlist import *
 
 
 SPEED_BOOST: int = 50  # Hraði sem er bætt við þegar takka hefur verið haldi í biðtíma
@@ -179,6 +180,12 @@ def analog_control(device_path: str) -> None:
 
                     if button.keycode == "BTN_THUMBR":
                         raise KeyboardInterrupt
+                    
+                    if button.keycode == "BTN_EAST":
+                        stopdamusic()
+                    
+                    if button.keycode == "BTN_NORTH":
+                        spilatonlist("blurred")
                     
             # Les analog merki og skrái í uppfletti töfluna "axes"
             if event.type == evdev.ecodes.EV_ABS:
