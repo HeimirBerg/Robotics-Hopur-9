@@ -5,12 +5,12 @@ import time
 
 
 # ------Fastar------
-speed      = 100
+speed      = 200
 start_turn = 130
 sd         = 45
 
 STUCK_THRESHOLD = 5   # cm — hversu lítil hreyfing telst fastur
-STUCK_TIME      = 10  # fjöldi lestrar áður en við segjum að hann sé fastur
+STUCK_TIME      = 20  # fjöldi lestrar áður en við segjum að hann sé fastur
 front_history   = deque(maxlen=5)  # ← add this
 
 # ------ Svæði ------
