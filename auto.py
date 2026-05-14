@@ -68,13 +68,15 @@ def escape_stuck(snapshot):
 
 def findExit(snapshot):
     full = [snapshot.get(a, MaxRange) for a in range(360)]
-    smoothed = [
-        sum(full[(a + i) % 360] for i in range(-15, 16)) / 31
+    # Lágmark í glugga — tryggir að öll leiðin sé frjáls, ekki bara meðaltal
+    # Meðaltal getur villst af nokkrum fjarlægum lesturum við brún veggjar
+    min_in_window = [
+        min(full[(a + i) % 360] for i in range(-15, 16))
         for a in range(360)
     ]
-    best_angle = max(range(360), key=lambda a: smoothed[a])
+    best_angle = max(range(360), key=lambda a: min_in_window[a])
     direction  = "Hægri" if 1 <= best_angle <= 179 else "Vinstri"
-    print(f"Best exit: {best_angle}° → {direction}")
+    print(f"Best exit: {best_angle}° ({min_in_window[best_angle]:.0f}cm min) → {direction}")
     return best_angle, direction
 
 def turnToExit(heading, direction):
