@@ -3,6 +3,8 @@ from picamera2 import Picamera2
 from flask import Flask, Response
 import sys
 
+
+
 # Uppsetning myndavélar
 try:
     picam2 = Picamera2()
@@ -35,9 +37,9 @@ def streymi():
 def index():
     # Einföld HTML síða til að skoða streymið
     return "<html><body style='background:#222; color:white; text-align:center;'>" \
-           "<h1>Robotics-Hopur-9 Live</h1>" \
-           "<img src='/video_feed' style='border:2px solid red;'>" \
-           "</body></html>"
+        "<h1>Robotics-Hopur-9 Live</h1>" \
+        "<img src='/video_feed' style='border:2px solid red;'>" \
+        "</body></html>"
 
 if __name__ == '__main__':
     # Síðan er á  http://10.98.208.33:5000
