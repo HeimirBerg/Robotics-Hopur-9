@@ -6,7 +6,7 @@ from movement import stop
 from manualdrive import manual
 from auto import *
 from lidar_auto import *
-from auto_fixed import * 
+
 
 
 def lalli() -> None:
@@ -29,7 +29,7 @@ def lalli() -> None:
             elif selection == 3:
                 raise KeyboardInterrupt
             elif selection == 4:
-                autopilot1()
+                autopilot_prufa()
             else:
                 print("Ég veit ekki hvað þessi tala gerir.\nVeldu tölu á bilinu 1-3.\n")
 
