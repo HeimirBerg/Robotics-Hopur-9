@@ -18,7 +18,7 @@ def lalli() -> None:
     time.sleep(2)
     while True:
         print("Hvað viltu að ég geri?")
-        print("1 - Sjálfvirk keyrsla\n2 - Hanvirk keyrsla\n3 - Hætta")
+        print("1 - Sjálfvirk keyrsla\n2 - Handvirk keyrsla\n3 - Hætta")
 
         try:
             selection = int(input("Val: "))
