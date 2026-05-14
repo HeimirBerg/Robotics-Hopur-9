@@ -2,6 +2,7 @@
 import random
 import subprocess
 import time
+import os
 
 spilari = None #Hátalarinn
 
@@ -15,21 +16,19 @@ def spilatonlist(skra):
         spilari = subprocess.Popen(
             term(skra),shell=True,
             stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL)
+            stderr=subprocess.DEVNULL, 
+            stdin=subprocess.PIPE)
     except Exception as e:
         print(f"Error: {e}")
 
 def stopdamusic():
-    global spilari
-    if spilari is not None:
-        spilari.terminate()
-        spilari = None
+    os.system("pkill -f mpg123")
 
 def rtonn(): # Spilum lag af handahófi
     tonar = ["guiltynigga", "baciate", "barbie", "Adolf Hitler Speech in 1935"]
     spilatonlist(random.choice(tonar))
 
-while True:
+"""while True:
     x = input("Veldu 1 eða 2 fyrir valið eða handahófskennt")
     if x == "1":
         skra = input("Veldu lag: ")
@@ -40,4 +39,4 @@ while True:
         stopdamusic()
         break
     else:
-        print("Veldu eitthvað annað")
+        print("Veldu eitthvað annað")"""

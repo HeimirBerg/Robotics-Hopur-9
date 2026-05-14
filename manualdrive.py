@@ -10,6 +10,7 @@ import evdev  # type: ignore
 import time
 
 import movement as m
+from tonlist import *
 
 
 SPEED_BOOST: int = 50  # Hraði sem er bætt við þegar takka hefur verið haldi í biðtíma
@@ -171,6 +172,7 @@ def analog_control(device_path: str) -> None:
             # Les takka
             if event.type == evdev.ecodes.EV_KEY:
                 button = evdev.categorize(event)
+                print(f"Þú ýttir á: {button.keycode} | Gildi: {button.keystate}")
                 if button.keystate == button.key_down:
                     
                     if button.keycode == "BTN_TR":
@@ -179,6 +181,13 @@ def analog_control(device_path: str) -> None:
 
                     if button.keycode == "BTN_THUMBR":
                         raise KeyboardInterrupt
+                    
+                    if "BTN_EAST" in button.keycode:
+                        stopdamusic()
+                    
+                    if "BTN_NORTH" in button.keycode:
+                        spilatonlist("blurred")
+                        print("Ýtt á NORTH - Reyni að spila...")
                     
             # Les analog merki og skrái í uppfletti töfluna "axes"
             if event.type == evdev.ecodes.EV_ABS:
