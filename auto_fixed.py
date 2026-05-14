@@ -1,17 +1,17 @@
-from sensor import *
+from sensor import start_lidar, stop_lidar, get_snapshot, under, min_distance, MaxRange
 from movement import *
 from collections import deque
 import time
-
 
 # ------Fastar------
 speed      = 200
 start_turn = 120
 sd         = 40
 
-STUCK_THRESHOLD = 5   # cm — hversu lítil hreyfing telst fastur
-STUCK_TIME      = 10  # fjöldi lestrar áður en við segjum að hann sé fastur
-front_history   = deque(maxlen=5)  # ← add this
+STUCK_THRESHOLD     = 15  # cm — hversu lítil hreyfing telst fastur (hækkað úr 5; 5 var of þröngt og veldur röngu greiningu í göngum)
+STUCK_TIME          = 10  # fjöldi lestrar áður en við segjum að hann sé fastur
+FRONT_STOP_PATIENCE = 3   # fjöldi samfelldra FrontStop lestrar áður en escape er kallað — forðast of snögg viðbrögð
+front_history       = deque(maxlen=5)
 
 # ------ Svæði ------
 zone_a_wide   = set(range(315, 360)) | set(range(0, 46))  # Fram — vítt — snemma uppgötvun (±45°)
@@ -22,9 +22,10 @@ zone_d = set(range(225, 316))                              # Vinstri
 zone_corner_r = set(range(30, 70))                         # Framhægri horn
 zone_corner_l = set(range(290, 330))                       # Framvinstri horn
 corner_sd     = 60                                         # cm — byrja að beygja þegar horn nálgast hlut
-degTime = 1.0 / 64.8                                      # Tíma fasti til að snúa bílnum
+degTime = 1.0 / 64.8                                       # Tíma fasti til að snúa bílnum
 
-recent_fronts = deque(maxlen=STUCK_TIME)
+recent_fronts      = deque(maxlen=STUCK_TIME)
+front_stop_counter = 0
 
 def is_stuck():
     if len(recent_fronts) < STUCK_TIME:
@@ -76,7 +77,9 @@ def findExit(snapshot):
         for a in range(360)
     ]
     best_angle = max(range(360), key=lambda a: min_in_window[a])
-    direction  = "Hægri" if 1 <= best_angle <= 179 else "Vinstri"
+    # Fix: best_angle == 0 þýðir beint áfram — gamall kóði veldur 360° snúningi
+    # Þetta er lagað með því að nota best_angle <= 179 í stað 1 <= best_angle <= 179
+    direction  = "Hægri" if best_angle <= 179 else "Vinstri"
     print(f"Best exit: {best_angle}° ({min_in_window[best_angle]:.0f}cm min) → {direction}")
     return best_angle, direction
 
@@ -96,7 +99,8 @@ def turnToExit(heading, direction):
     stop()
     time.sleep(0.4)
 
-def autopilot():
+def autopilot1():
+    global front_stop_counter
     start_lidar()  # Byrjar LiDAR í bakgrunni
     print("Autopilot running.")
     try:
@@ -104,7 +108,7 @@ def autopilot():
             snapshot = get_snapshot()
 
             FrontClose = under(snapshot, zone_a_wide, start_turn)
-            FrontStop = under(snapshot, zone_a_narrow, sd)  # Aðeins þröngt svæði — forðast rangar niðurstöður vegna þunna hluta eins og stólsfóta
+            FrontStop  = under(snapshot, zone_a_narrow, sd)  # Aðeins þröngt svæði — forðast rangar niðurstöður vegna þunna hluta eins og stólsfóta
             RightClose = under(snapshot, zone_b, sd)
             LeftClose  = under(snapshot, zone_d, sd)
 
@@ -121,10 +125,12 @@ def autopilot():
             if is_stuck():
                 # ------ Fastur — finna útveg ------
                 print("Fastur! Skanna fyrir útveg...")
+                front_stop_counter = 0
                 escape_stuck(snapshot)
 
             elif not FrontStop and not FrontClose:
                 # ------ keyra áfram ------
+                front_stop_counter = 0
                 CornerRightClose = under(snapshot, zone_corner_r, corner_sd)  # Framhægri horn nálægt
                 CornerLeftClose  = under(snapshot, zone_corner_l, corner_sd)  # Framvinstri horn nálægt
 
@@ -141,6 +147,7 @@ def autopilot():
 
             elif FrontClose and not FrontStop:
                 # ------ Eitthvað framundan en enn pláss — rólegt beygja ------
+                front_stop_counter = 0
                 front_ref = min(
                     min_distance(snapshot, zone_a_wide),
                     min_distance(snapshot, zone_a_narrow)
@@ -155,7 +162,13 @@ def autopilot():
             elif FrontStop:
                 # Stoppa og skanna alltaf — tryggir að hann finni útveg
                 # jafnvel í U-laga rými þar sem hliðarveggir eru ekki nærri
-                escape_stuck(snapshot)
+                # Bíður FRONT_STOP_PATIENCE lestrar áður en escape er kallað til að forðast
+                # of snögg viðbrögð við styttum einstaka lesturum
+                front_stop_counter += 1
+                stop()
+                if front_stop_counter >= FRONT_STOP_PATIENCE:
+                    front_stop_counter = 0
+                    escape_stuck(snapshot)
 
             time.sleep(0.1)
 
