@@ -3,12 +3,12 @@ from movement import *
 import time
 
 # ------Fastar------
-speed      = 200
-start_turn = 80
-sd         = 35  
+speed      = 255
+start_turn = 100
+sd         = 40  
 
 # ------ Svæði ------
-zone_a = set(range(315, 360)) | set(range(0, 46))  # Fram
+zone_a = set(range(310, 360)) | set(range(0, 50))  # Fram
 zone_b = set(range(45, 136))                        # Hægri
 zone_c = set(range(135, 226))                       # Aftur
 zone_d = set(range(225, 316))                       # Vinstri
