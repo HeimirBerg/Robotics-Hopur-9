@@ -20,9 +20,11 @@ def generate_frames():
         # Tökum mynd
         frame = picam2.capture_array()
         # Breytum í JPEG
-        _, buffer = cv2.imencode('.jpg', frame)
+        ret, buffer = cv2.imencode('.jpg', frame)
+        if not ret:
+            continue
         # Setjum úrtakið á MJPEG form
-        yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+        yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
 @app.route('/streymi')
 def streymi(): 
@@ -32,8 +34,11 @@ def streymi():
 @app.route('/')
 def index():
     # Einföld HTML síða til að skoða streymið
-    return "<html><body><img src='/video_feed'></body></html>"
+    return "<html><body style='background:#222; color:white; text-align:center;'>" \
+           "<h1>Robotics-Hopur-9 Live</h1>" \
+           "<img src='/video_feed' style='border:2px solid red;'>" \
+           "</body></html>"
 
 if __name__ == '__main__':
     # Síðan er á  http://10.98.208.33:5000
-    app.run(host='0.0.0.0', debug=False, use_reloader=False)
+    app.run(host='0.0.0.0', port = 5000, threaded=True)
