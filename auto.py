@@ -140,6 +140,8 @@ def autopilot():
                     turn("Hægri", speed, inner)    # Beygja smá til hægri
 
             elif FrontStop:
+                stop()  # Stoppa fyrst áður en við snúum
+                time.sleep(0.1)
                 if not LeftClose and not RightClose:
                     if left_clear > right_clear:
                         drive(speed, 3, -1)  # snúa á staðnum til vinstri
