@@ -148,9 +148,9 @@ def autopilot():
                 ratio = max(0.0, min(1.0, (front_ref - sd) / (start_turn - sd)))
                 inner = int(speed * ratio)
                 if left_clear < right_clear:
-                    turn("Vinstri", speed, inner)  # Beygja smá til vinstri
-                else:
                     turn("Hægri", speed, inner)    # Beygja smá til hægri
+                else:
+                    turn("Vinstri", speed, inner)  # Beygja smá til vinstri
 
             elif FrontStop:
                 # Stoppa og skanna alltaf — tryggir að hann finni útveg
