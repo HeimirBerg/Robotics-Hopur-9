@@ -5,7 +5,7 @@ import time
 
 
 # ------Fastar------
-speed      = 100
+speed      = 200
 start_turn = 130
 sd         = 45
 
