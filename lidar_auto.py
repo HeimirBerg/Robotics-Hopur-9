@@ -144,7 +144,7 @@ def escape_stuck(left, right):
     print("  Escape complete.")
 
 
-def autopilot():
+def autopilot_prufa():
     start_lidar()
     print("Autopilot running.")
 
