@@ -7,14 +7,14 @@ import time
 # ------Fastar------
 speed      = 200
 start_turn = 130
-sd         = 45
+sd         = 50
 
 STUCK_THRESHOLD = 5   # cm — hversu lítil hreyfing telst fastur
 STUCK_TIME      = 20  # fjöldi lestrar áður en við segjum að hann sé fastur
 front_history   = deque(maxlen=5)  # ← add this
 
-DRIFT_THRESHOLD = 8   # cm — hversu lítil breyting í lestri þegar keyrt er beint
-DRIFT_COUNT     = 25  # fjöldi lestrar — hversu lengi við fylgjumst með áður en við segjum fastur
+DRIFT_THRESHOLD = 5   # cm — hversu lítil breyting í lestri þegar keyrt er beint
+DRIFT_COUNT     = 20  # fjöldi lestrar — hversu lengi við fylgjumst með áður en við segjum fastur
 
 # ------ Svæði ------
 zone_a_wide   = set(range(315, 360)) | set(range(0, 46))  # Fram — vítt — snemma uppgötvun (±45°)
@@ -25,7 +25,7 @@ zone_d = set(range(225, 316))                              # Vinstri
 zone_corner_r = set(range(30, 70))                         # Framhægri horn
 zone_corner_l = set(range(290, 330))                       # Framvinstri horn
 corner_sd     = 60                                         # cm — byrja að beygja þegar horn nálgast hlut
-degTime = 2.0 / 64.8                                      # Tíma fasti til að snúa bílnum
+degTime = 3.0 / 64.8                                      # Tíma fasti til að snúa bílnum
 
 recent_fronts = deque(maxlen=STUCK_TIME)
 recent_all    = deque(maxlen=DRIFT_COUNT)  # fylgjast með lestrum óháð fjarlægð — grípur kyrrstöðu á opnum svæðum
