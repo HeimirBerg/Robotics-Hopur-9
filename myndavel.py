@@ -6,14 +6,10 @@ import sys
 
 
 # Uppsetning myndavélar
-try:
-    picam2 = Picamera2()
-    config = picam2.create_preview_configuration(main={"size": (640, 480)})
-    picam2.configure(config)
-    picam2.start()
-except Exception as e:
-    print(f"CAMERA_INIT_FAILED: {e}")
-    sys.exit(1)
+picam2 = Picamera2()
+config = picam2.create_preview_configuration(main={"size": (640, 480)})
+picam2.configure(config)
+picam2.start()
 
 app = Flask(__name__)
 
@@ -26,21 +22,25 @@ def generate_frames():
         if not ret:
             continue
         # Setjum úrtakið á MJPEG form
-        yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+
+@app.route('/')
+def index():
+    # Einföld HTML síða til að skoða streymið
+    return "<html><body style='background:#222; color:white; text-align:center;'>" \
+           "<h1>Robotics-Hopur-9 Live</h1>" \
+           "<img src='/streymi' style='border:2px solid red;'>" \
+           "</body></html>"
 
 @app.route('/streymi')
 def streymi(): 
     return Response(generate_frames(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/')
-def index():
-    # Einföld HTML síða til að skoða streymið
-    return "<html><body style='background:#222; color:white; text-align:center;'>" \
-        "<h1>Robotics-Hopur-9 Live</h1>" \
-        "<img src='/video_feed' style='border:2px solid red;'>" \
-        "</body></html>"
-
 if __name__ == '__main__':
     # Síðan er á  http://10.98.208.33:5000
-    app.run(host='0.0.0.0', port = 5000, threaded=True)
+    try:
+        app.run(host='0.0.0.0', port = 5000, threaded=True)
+    finally:
+        picam2.stop()
