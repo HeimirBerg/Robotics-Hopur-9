@@ -1,7 +1,7 @@
 from movement import drive, stop
 import time
 
-degTime = 1.0 / 35.9  # calculated from last run: 180° command → 187° actual at 1.0/34.6
+degTime = 1.0 / 36.3  # calculated from last run: 180° command → 182° actual at 1.0/35.9
 
 TARGET_DEGREES = 180
 duration = TARGET_DEGREES * degTime
