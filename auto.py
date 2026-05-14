@@ -6,19 +6,21 @@ import time
 # ------Fastar------
 speed      = 200
 start_turn = 120
-sd         = 25  # cm — stoppa ef eitthvað er innan við þetta framundan
-side_sd    = 30  # cm — halda þessum fjarlægð frá hliðarvegg
+sd         = 40
 
 STUCK_THRESHOLD = 5   # cm — hversu lítil hreyfing telst fastur
-STUCK_TIME      = 15  # fjöldi lestrar áður en við segjum að hann sé fastur
+STUCK_TIME      = 10  # fjöldi lestrar áður en við segjum að hann sé fastur
 front_history   = deque(maxlen=5)  # ← add this
 
 # ------ Svæði ------
-zone_a_wide   = set(range(290, 360)) | set(range(0, 70))  # Fram — vítt — snemma uppgötvun
+zone_a_wide   = set(range(315, 360)) | set(range(0, 46))  # Fram — vítt — snemma uppgötvun (±45°)
 zone_a_narrow = set(range(345, 360)) | set(range(0, 16))  # Fram — þröngt — beint framundan
 zone_b = set(range(45, 136))                               # Hægri
 zone_c = set(range(135, 226))                              # Aftur
 zone_d = set(range(225, 316))                              # Vinstri
+zone_corner_r = set(range(30, 70))                         # Framhægri horn
+zone_corner_l = set(range(290, 330))                       # Framvinstri horn
+corner_sd     = 60                                         # cm — byrja að beygja þegar horn nálgast hlut
 degTime = 1.0 / 64.8                                      # Tíma fasti til að snúa bílnum
 
 recent_fronts = deque(maxlen=STUCK_TIME)
@@ -41,7 +43,7 @@ def escape_stuck(snapshot):
     if rear > 40:
         print(f"Bakka ({rear:.0f}cm)...")
         send_speeds(-speed, -speed)
-        time.sleep(0.5)
+        time.sleep(1.0)
         stop()
         time.sleep(1.0)
     else:
@@ -100,8 +102,8 @@ def autopilot():
 
             FrontClose = under(snapshot, zone_a_wide, start_turn)
             FrontStop = under(snapshot, zone_a_narrow, sd)  # Aðeins þröngt svæði — forðast rangar niðurstöður vegna þunna hluta eins og stólsfóta
-            RightClose = under(snapshot, zone_b, side_sd)
-            LeftClose  = under(snapshot, zone_d, side_sd)
+            RightClose = under(snapshot, zone_b, sd)
+            LeftClose  = under(snapshot, zone_d, sd)
 
             right_clear = min_distance(snapshot, zone_b)
             left_clear  = min_distance(snapshot, zone_d)
@@ -120,10 +122,17 @@ def autopilot():
 
             elif not FrontStop and not FrontClose:
                 # ------ keyra áfram ------
+                CornerRightClose = under(snapshot, zone_corner_r, corner_sd)  # Framhægri horn nálægt
+                CornerLeftClose  = under(snapshot, zone_corner_l, corner_sd)  # Framvinstri horn nálægt
+
                 if LeftClose and not RightClose:
                     auto_calculate_turn("Hægri", front_dist, speed)   # Smávegis til hægri á meðan við keyrum áfram
                 elif RightClose and not LeftClose:
                     auto_calculate_turn("Vinstri", front_dist, speed)  # Smávegis til vinstri á meðan við keyrum áfram
+                elif CornerRightClose and not CornerLeftClose:
+                    auto_calculate_turn("Vinstri", front_dist, speed)  # Horn hægri nálægt — beygja smávegis til vinstri
+                elif CornerLeftClose and not CornerRightClose:
+                    auto_calculate_turn("Hægri", front_dist, speed)   # Horn vinstri nálægt — beygja smávegis til hægri
                 else:
                     send_speeds(speed, speed)  # Keyra beint áfram
 
