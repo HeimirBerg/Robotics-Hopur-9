@@ -30,13 +30,12 @@ def rtonn(): # Spilum lag af handahófi
     spilatonlist(random.choice(tonar))
 
 
-
 x = input("Veldu 1 eða 2 fyrir valið eða handahófskennt")
 if x == "1":
     skra = input("Veldu lag: ")
-    lag = spilatonlist(skra)
+    spilatonlist(skra)
     time.sleep(5)
-    lag.terminate()
+    stopdamusic()
 elif x == "2":
     rtonn()
 else:
