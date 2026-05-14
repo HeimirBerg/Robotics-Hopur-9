@@ -92,20 +92,29 @@ def findExit(snapshot):
         print(f"Snapshot of tæmt ({max(min_in_window):.0f}cm) — bíð eftir betri gögnum")
         return 0, None
 
-    # Finna næsta horn við 0° með næga clearance — ekki þarf lengsta leið, bara næsta
-    MIN_CLEARANCE = 100  # cm — lágmarkspláss til að teljast góður útveg
+    # Finna næsta horn við 0° með næga clearance — ekki þær sem benda beint í vegginn
+    MIN_CLEARANCE      = 100  # cm — lágmarkspláss til að teljast góður útveg
+    MIN_ANGLE_FROM_FRONT = 30  # ° — lágmarkshorn frá 0° (þar sem hindrunin var)
 
     def angular_dist(a):
         # Fjarlægð frá 0° (beint fram) — 180° er lengst í burtu
         return a if a <= 180 else 360 - a
 
-    viable = [a for a in range(360) if min_in_window[a] >= MIN_CLEARANCE]
+    # Fyrsta val: skýr leið og nógu langt frá veggnum sem við höfðum í
+    viable = [a for a in range(360)
+              if min_in_window[a] >= MIN_CLEARANCE
+              and angular_dist(a) >= MIN_ANGLE_FROM_FRONT]
+
+    if not viable:
+        # Seinni tilraun: sleppum horn-skilyrðinu ef ekkert finnst
+        viable = [a for a in range(360) if min_in_window[a] >= MIN_CLEARANCE]
 
     if viable:
         best_angle = min(viable, key=angular_dist)  # Næsti útvegur, ekki stærsti
     else:
-        # Enginn útvegur með næga clearance — velja opnasta horn sem fallback
-        best_angle = max(range(360), key=lambda a: min_in_window[a])
+        # Enginn útvegur með næga clearance — velja opnasta horn sem er ekki beint fram
+        candidates = [a for a in range(360) if angular_dist(a) >= MIN_ANGLE_FROM_FRONT]
+        best_angle = max(candidates, key=lambda a: min_in_window[a])
 
     direction = "Hægri" if 1 <= best_angle <= 179 else "Vinstri"
     print(f"Best exit: {best_angle}° ({min_in_window[best_angle]:.0f}cm min) → {direction}")
@@ -196,9 +205,26 @@ def autopilot():
                     turn("Vinstri", speed, inner)  # Beygja smá til vinstri
 
             elif FrontStop:
-                # Stoppa og skanna alltaf — tryggir að hann finni útveg
-                # jafnvel í U-laga rými þar sem hliðarveggir eru ekki nærri
-                escape_stuck(snapshot)
+                # Hindrun of nálægt — reyna skörpa snúning á staðnum fyrst (án þess að bakka)
+                stop()
+                time.sleep(0.3)
+                fresh = get_snapshot()
+                r = min_distance(fresh, zone_b)
+                l = min_distance(fresh, zone_d)
+                turn_dir = "Hægri" if r > l else "Vinstri"
+                dir_num  = 4 if turn_dir == "Hægri" else 3
+                print(f"FrontStop — snúast {turn_dir} á staðnum (L:{l:.0f}cm  R:{r:.0f}cm)...")
+                drive(255, dir_num, -1)   # byrja snúning
+                deadline = time.time() + 3.0
+                while time.time() < deadline:
+                    time.sleep(0.1)
+                    fresh = get_snapshot()
+                    if not under(fresh, zone_a_narrow, sd):
+                        break
+                stop()
+                # Ef framundan er enn lokað eftir snúning — nota fullt escape
+                if under(get_snapshot(), zone_a_narrow, sd):
+                    escape_stuck(snapshot)
 
             time.sleep(0.1)
 
