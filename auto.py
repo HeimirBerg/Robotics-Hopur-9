@@ -97,7 +97,7 @@ def autopilot():
             snapshot = get_snapshot()
 
             FrontClose = under(snapshot, zone_a_wide, start_turn)
-            FrontStop  = front_dist <= sd  # uses min_distance from wide zone — catches thin objects
+            FrontStop = under(snapshot, zone_a_narrow, sd) or under(snapshot, zone_a_wide, sd)
             RightClose = under(snapshot, zone_b, sd)
             LeftClose  = under(snapshot, zone_d, sd)
 
