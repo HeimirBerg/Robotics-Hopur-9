@@ -140,23 +140,9 @@ def autopilot():
                     turn("Hægri", speed, inner)    # Beygja smá til hægri
 
             elif FrontStop:
-                stop()  # Stoppa fyrst áður en við snúum
-                time.sleep(0.1)
-                if not LeftClose and not RightClose:
-                    if left_clear > right_clear:
-                        drive(speed, 3, -1)  # snúa á staðnum til vinstri
-                    else:
-                        drive(speed, 4, -1)  # snúa á staðnum til hægri
-
-                elif LeftClose and not RightClose:
-                    drive(speed, 4, -1)      # snúa á staðnum til hægri
-
-                elif RightClose and not LeftClose:
-                    drive(speed, 3, -1)      # snúa á staðnum til vinstri
-
-                else:
-                    # Allt lokað — finna útveg
-                    escape_stuck(snapshot)
+                # Stoppa og skanna alltaf — tryggir að hann finni útveg
+                # jafnvel í U-laga rými þar sem hliðarveggir eru ekki nærri
+                escape_stuck(snapshot)
 
             time.sleep(0.1)
 
