@@ -25,11 +25,6 @@ def generate_frames():
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
-@app.route('/streymi')
-def streymi(): 
-    return Response(generate_frames(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
-
 @app.route('/')
 def index():
     # Einföld HTML síða til að skoða streymið
@@ -38,7 +33,14 @@ def index():
         "<img src='/video_feed' style='border:2px solid red;'>" \
         "</body></html>"
 
+@app.route('/streymi')
+def streymi(): 
+    return Response(generate_frames(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
 if __name__ == '__main__':
     # Síðan er á  http://10.98.208.33:5000
-    app.run(host='0.0.0.0', port = 5000, threaded=True)
-    picam2.stop()
+    try:
+        app.run(host='0.0.0.0', port = 5000, threaded=True)
+    finally:
+        picam2.stop()
