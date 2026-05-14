@@ -43,7 +43,7 @@ def escape_stuck(snapshot):
     if rear > 40:
         print(f"Bakka ({rear:.0f}cm)...")
         send_speeds(-speed, -speed)
-        time.sleep(0.5)
+        time.sleep(1.0)
         stop()
         time.sleep(1.0)
     else:
@@ -65,7 +65,7 @@ def escape_stuck(snapshot):
         time.sleep(0.05)
     stop()
     print("Komst út.")
-
+    
 def findExit(snapshot):
     full = [snapshot.get(a, MaxRange) for a in range(360)]
     smoothed = [
