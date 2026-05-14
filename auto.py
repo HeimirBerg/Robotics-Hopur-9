@@ -13,6 +13,9 @@ STUCK_THRESHOLD = 5   # cm — hversu lítil hreyfing telst fastur
 STUCK_TIME      = 20  # fjöldi lestrar áður en við segjum að hann sé fastur
 front_history   = deque(maxlen=5)  # ← add this
 
+DRIFT_THRESHOLD = 8   # cm — hversu lítil breyting í lestri þegar keyrt er beint
+DRIFT_COUNT     = 25  # fjöldi lestrar — hversu lengi við fylgjumst með áður en við segjum fastur
+
 # ------ Svæði ------
 zone_a_wide   = set(range(315, 360)) | set(range(0, 46))  # Fram — vítt — snemma uppgötvun (±45°)
 zone_a_narrow = set(range(345, 360)) | set(range(0, 16))  # Fram — þröngt — beint framundan
@@ -25,6 +28,7 @@ corner_sd     = 60                                         # cm — byrja að be
 degTime = 2.0 / 64.8                                      # Tíma fasti til að snúa bílnum
 
 recent_fronts = deque(maxlen=STUCK_TIME)
+recent_all    = deque(maxlen=DRIFT_COUNT)  # fylgjast með lestrum óháð fjarlægð — grípur kyrrstöðu á opnum svæðum
 
 def is_stuck():
     if len(recent_fronts) < STUCK_TIME:
@@ -33,8 +37,16 @@ def is_stuck():
         return False
     return max(recent_fronts) - min(recent_fronts) < STUCK_THRESHOLD
 
+def is_drifting_stuck():
+    # Virkar jafnvel þegar lestur er yfir start_turn — grípur kyrrstöðu á opnum svæðum
+    # þar sem is_stuck() sér ekki neitt vegna þess að allar lestur eru "frjálsar"
+    if len(recent_all) < DRIFT_COUNT:
+        return False
+    return max(recent_all) - min(recent_all) < DRIFT_THRESHOLD
+
 def escape_stuck(snapshot):
     recent_fronts.clear()
+    recent_all.clear()  # hreinsa drift-sögu líka svo hann fari ekki strax í escape aftur
     print("Fastur! Hætti og skanna...")
     stop()
     time.sleep(1.0)
@@ -115,10 +127,11 @@ def autopilot():
             front_history.append(front_dist)
             smoothed_front = sum(front_history) / len(front_history)
             recent_fronts.append(smoothed_front)  # fylgjast með hreyfingu
+            recent_all.append(front_dist)          # hráar lestur — fyrir drift-greiningu
 
             print(f"front: {front_dist:.0f}cm  FrontClose: {FrontClose}  FrontStop: {FrontStop}  L: {LeftClose}  R: {RightClose}")
 
-            if is_stuck():
+            if is_stuck() or is_drifting_stuck():
                 # ------ Fastur — finna útveg ------
                 print("Fastur! Skanna fyrir útveg...")
                 escape_stuck(snapshot)
