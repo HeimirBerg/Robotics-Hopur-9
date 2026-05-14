@@ -11,6 +11,7 @@ turn_distance = 150  # cm — start turning (increased so robot gets more distan
 stop_distance = 30   # cm — stop and spin in place
 STUCK_THRESHOLD = 3  # cm — how little movement counts as stuck
 STUCK_TIME      = 15 # how many readings before declaring stuck
+CLEAR_TIMEOUT   = 40 # loops — declare stuck if front hasn't cleared in this many cycles
 
 ROBOT_WIDTH     = 18.5  # cm — physical width of robot
 ROBOT_LENGTH    = 32.3  # cm — physical length of robot
@@ -29,7 +30,8 @@ ESCAPE_WINDOW = math.ceil(
 # Current value is tuned for ~90° escape turns — adjust if over/under-shooting.
 SEC_PER_DEG_AT_255 = 1.0 / 36.3   # calibrated: 180° command → 180° actual on new body
 
-recent_fronts = deque(maxlen=STUCK_TIME)
+recent_fronts  = deque(maxlen=STUCK_TIME)
+_loops_blocked = 0  # counts consecutive loops where front hasn't cleared turn_distance
 
 
 def is_stuck():
@@ -105,9 +107,11 @@ def escape_stuck(left, right):
     re-scan and spin again — up to MAX_SPIN_RETRIES times — so that an
     under-powered or high-friction drivetrain gets extra chances to clear.
     """
+    global _loops_blocked
     MAX_SPIN_RETRIES = 3   # max number of scan-and-spin attempts before giving up
 
     recent_fronts.clear()
+    _loops_blocked = 0
 
     print("Stuck! Stopping for 360° scan...")
     stop()
@@ -159,6 +163,7 @@ def escape_stuck(left, right):
 
 
 def autopilot_prufa():
+    global _loops_blocked
     start_lidar()
     print("Autopilot running.")
 
@@ -171,9 +176,16 @@ def autopilot_prufa():
 
             recent_fronts.append(front_narrow)
 
-            print(f"front: {front_narrow:.0f} ({front_wide:.0f} wide)  left: {left:.0f}  right: {right:.0f}")
+            # Track how long the front has been blocked — catches oscillating readings
+            # that fool is_stuck() into thinking the robot is moving
+            if front_narrow < turn_distance:
+                _loops_blocked += 1
+            else:
+                _loops_blocked = 0
 
-            if is_stuck():
+            print(f"front: {front_narrow:.0f} ({front_wide:.0f} wide)  left: {left:.0f}  right: {right:.0f}  blocked: {_loops_blocked}")
+
+            if is_stuck() or _loops_blocked >= CLEAR_TIMEOUT:
                 print("Stuck! Scanning for escape route...")
                 escape_stuck(left, right)
 
@@ -184,7 +196,7 @@ def autopilot_prufa():
             elif front_narrow > stop_distance:
                 # Wall detected — curve away smoothly like a car.
                 # Outer wheel stays at full speed always.
-                # Inner wheel slows linearly: full speed (straight) → 0 (tight curve).
+                # Inner wheel slows with a squared ratio: more aggressive turning early on.
                 front_ref = min(front_wide, front_narrow)
                 ratio = ((front_ref - stop_distance) / (turn_distance - stop_distance)) ** 2  # squared for more aggressive early turning
                 inner = int(speed * ratio)
