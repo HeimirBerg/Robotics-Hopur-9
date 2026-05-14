@@ -1,43 +1,37 @@
 import cv2
 from picamera2 import Picamera2
 from flask import Flask, Response
+import sys
 
 # Uppsetning myndavélar
-print("Initializing Camera...")
-picam2 = Picamera2()
-config = picam2.create_preview_configuration(main={"size": (640, 480)})
-picam2.configure(config)
-picam2.start()
-print("Kveikt á myndavél!")
-
+try:
+    picam2 = Picamera2()
+    config = picam2.create_preview_configuration(main={"size": (640, 480)})
+    picam2.configure(config)
+    picam2.start()
+except Exception as e:
+    print(f"CAMERA_INIT_FAILED: {e}")
+    sys.exit(1)
 app = Flask(__name__)
-
 def generate_frames():
     while True:
         # Tökum mynd
         frame = picam2.capture_array()
-        
         # Breytum í JPEG
-        ret, buffer = cv2.imencode('.jpg', frame)
-        if not ret:
-            continue
-            
-        frame_bytes = buffer.tobytes()
-
+        _, buffer = cv2.imencode('.jpg', frame)
         # Setjum úrtakið á MJPEG form
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+        yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
-@app.route('/')
+@app.route('/streymi')
 def index():
     # Einföld HTML síða til að skoða streymið
     return "<html><body style='background:#222; color:white; text-align:center;'>" \
            "<h1>Robotics-Hopur-9 Live</h1>" \
-           "<img src='/video_feed' style='border:2px solid red;'>" \
+           "<img src='/streymi' style='border:2px solid red;'>" \
            "</body></html>"
 
-@app.route('/video_feed')
-def video_feed(): 
+@app.route('/streymi')
+def streymi(): 
     return Response(generate_frames(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
