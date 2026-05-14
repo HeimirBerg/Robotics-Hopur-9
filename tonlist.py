@@ -9,8 +9,8 @@ def term(skra): # Notum þetta fall til að skrifa
     return f"mpg123 -a plughw:3,0 --mono \"music/{skra}.mp3\""
 
 def spilatonlist(skra):
-    stopdamusic()
     global spilari
+    stopdamusic()
     try:
         spilari = subprocess.Popen(
             term(skra),shell=True,
@@ -34,9 +34,9 @@ x = input("Veldu 1 eða 2 fyrir valið eða handahófskennt")
 if x == "1":
     skra = input("Veldu lag: ")
     spilatonlist(skra)
-    time.sleep(5)
-    stopdamusic()
 elif x == "2":
     rtonn()
+elif x == "3":
+    stopdamusic()
 else:
     print("Veldu eitthvað annað")
