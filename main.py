@@ -1,19 +1,18 @@
 """Aðal skráin sem Lalli keyrir"""
 
 import subprocess
-#from myndavel import *
+from myndavel import *
 from movement import stop
 from manualdrive import manual
 from auto import *
 from lidar_auto import *
 
 
-
 def lalli() -> None:
     """Fallið hans Lalla"""
     
     print("\n=== Hæ, hæ, ég er Lalli Róbóti ===\n")
-    myndavel = subprocess.Popen(['python3', 'myndavel.py']) # Keyrir myndavél í bakgrunni
+    myndavel = subprocess.Popen("python3 myndavel.py", shell=True) # Keyrir myndavél í bakgrunni
     time.sleep(3)
     while True:
         print("Hvað viltu að ég geri?")
