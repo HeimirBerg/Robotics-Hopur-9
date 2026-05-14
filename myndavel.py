@@ -36,8 +36,4 @@ def index():
 
 if __name__ == '__main__':
     # Síðan er á  http://10.98.208.33:5000
-    try:
-        # We use 0.0.0.0 to listen on all network interfaces
-        app.run(host='0.0.0.0', debug=False, use_reloader=False)
-    finally:
-        picam2.stop()
+    app.run(host='0.0.0.0', debug=False, use_reloader=False)
