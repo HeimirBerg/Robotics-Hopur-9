@@ -6,7 +6,7 @@ import time
 # ------Fastar------
 speed      = 200
 start_turn = 120
-sd         = 35
+sd         = 40
 
 STUCK_THRESHOLD = 5   # cm — hversu lítil hreyfing telst fastur
 STUCK_TIME      = 10  # fjöldi lestrar áður en við segjum að hann sé fastur
@@ -65,7 +65,7 @@ def escape_stuck(snapshot):
         time.sleep(0.05)
     stop()
     print("Komst út.")
-    
+
 def findExit(snapshot):
     full = [snapshot.get(a, MaxRange) for a in range(360)]
     smoothed = [
