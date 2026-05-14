@@ -4,7 +4,7 @@ import subprocess
 from movement import stop
 from manualdrive import manual
 from auto import *
-from lidarprufa import *
+from lidarprufa2 import *
 
 
 def lalli() -> None:
