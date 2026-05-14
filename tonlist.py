@@ -29,14 +29,15 @@ def rtonn(): # Spilum lag af handahófi
     tonar = ["guiltynigga", "baciate", "barbie", "Adolf Hitler Speech in 1935"]
     spilatonlist(random.choice(tonar))
 
-
-x = input("Veldu 1 eða 2 fyrir valið eða handahófskennt")
-if x == "1":
-    skra = input("Veldu lag: ")
-    spilatonlist(skra)
-    time.sleep(5)
-    stopdamusic()
-elif x == "2":
-    rtonn()
-else:
-    print("Veldu eitthvað annað")
+while True:
+    x = input("Veldu 1 eða 2 fyrir valið eða handahófskennt")
+    if x == "1":
+        skra = input("Veldu lag: ")
+        spilatonlist(skra)
+    elif x == "2":
+        rtonn()
+    elif x == "3":
+        stopdamusic()
+        break
+    else:
+        print("Veldu eitthvað annað")
