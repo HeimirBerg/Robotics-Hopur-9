@@ -12,7 +12,8 @@ def lalli() -> None:
     """Fallið hans Lalla"""
     
     print("\n=== Hæ, hæ, ég er Lalli Róbóti ===\n")
-    #myndavel = subprocess.Popen("python3 myndavel.py") # Keyrir myndavél í bakgrunni
+    myndavel = subprocess.Popen(['python3', 'myndavel.py']) # Keyrir myndavél í bakgrunni
+    time.sleep(3)
     while True:
         print("Hvað viltu að ég geri?")
         print("1 - Sjálfvirk keyrsla\n2 - Hanvirk keyrsla\n3 - Hætta")
@@ -38,7 +39,7 @@ def lalli() -> None:
             stop()
             print("\n=== Hætti í keyrslu ===\nSé þig seinna.")
             break
-    #myndavel.terminate()
+    myndavel.terminate()
             
 
 if __name__ == "__main__":
