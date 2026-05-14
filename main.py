@@ -13,7 +13,7 @@ def lalli() -> None:
     
     print("\n=== Hæ, hæ, ég er Lalli Róbóti ===\n")
     myndavel = subprocess.Popen("python3 myndavel.py", shell=True) # Keyrir myndavél í bakgrunni
-    time.sleep(5)
+    time.sleep(6)
     while True:
         print("Hvað viltu að ég geri?")
         print("1 - Sjálfvirk keyrsla\n2 - Hanvirk keyrsla\n3 - Hætta")
