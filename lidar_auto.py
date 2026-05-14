@@ -6,7 +6,7 @@ import math
 from collections import deque
 
 # --- Fastar ---
-speed         = 150
+speed         = 225
 turn_distance = 120  # cm — start turning
 stop_distance = 20   # cm — stop and spin in place
 STUCK_THRESHOLD = 3  # cm — how little movement counts as stuck
