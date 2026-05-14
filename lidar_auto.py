@@ -27,7 +27,7 @@ ESCAPE_WINDOW = math.ceil(
 # To recalibrate: run drive(255, 4, -1) for exactly 1.0 s, measure the degrees
 # turned, then set SEC_PER_DEG_AT_255 = 1.0 / measured_degrees.
 # Current value is tuned for ~90° escape turns — adjust if over/under-shooting.
-SEC_PER_DEG_AT_255 = 1.0 / 167.9  # calibrated: 181° command → 180° actual
+SEC_PER_DEG_AT_255 = 1.0 / 64.8   # calibrated: 181° command → 180° actual
 
 recent_fronts = deque(maxlen=STUCK_TIME)
 
