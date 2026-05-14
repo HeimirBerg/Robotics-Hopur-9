@@ -4,7 +4,7 @@ import time
 
 # ------Fastar------
 speed      = 255
-start_turn = 100
+start_turn = 120
 sd         = 40  
 
 # ------ Svæði ------
