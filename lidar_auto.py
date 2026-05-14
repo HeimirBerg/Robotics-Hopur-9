@@ -6,9 +6,9 @@ import math
 from collections import deque
 
 # --- Fastar ---
-speed         = 150
+speed         = 225
 turn_distance = 120  # cm — start turning
-stop_distance = 20   # cm — stop and spin in place
+stop_distance = 30   # cm — stop and spin in place
 STUCK_THRESHOLD = 3  # cm — how little movement counts as stuck
 STUCK_TIME      = 15 # how many readings before declaring stuck
 
@@ -27,7 +27,7 @@ ESCAPE_WINDOW = math.ceil(
 # To recalibrate: run drive(255, 4, -1) for exactly 1.0 s, measure the degrees
 # turned, then set SEC_PER_DEG_AT_255 = 1.0 / measured_degrees.
 # Current value is tuned for ~90° escape turns — adjust if over/under-shooting.
-SEC_PER_DEG_AT_255 = 1.0 / 167.9  # calibrated: 181° command → 180° actual
+SEC_PER_DEG_AT_255 = 1.0 / 64.8   # calibrated: 181° command → 180° actual
 
 recent_fronts = deque(maxlen=STUCK_TIME)
 
@@ -144,7 +144,7 @@ def escape_stuck(left, right):
     print("  Escape complete.")
 
 
-def autopilot():
+def autopilot_prufa():
     start_lidar()
     print("Autopilot running.")
 

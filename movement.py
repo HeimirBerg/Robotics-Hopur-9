@@ -235,8 +235,8 @@ def calculate_boosts(
 
 
 def auto_calculate_turn(direction, distance, speed):
-    turn_speed = int(speed * (distance - 20) / 80)
-    turn_speed = max(0, turn_speed)
+    turn_speed = int(speed * (distance - 40) / 80)
+    turn_speed = max(0, min(turn_speed, speed))
     return turn(direction, speed, turn_speed)
 
 

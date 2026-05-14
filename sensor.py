@@ -32,19 +32,21 @@ def _scan_worker():
         if scan_gen is None:
             raise Exception("Could not start scan after 100 attempts")
 
+        current_scan = {}
+
         for scan in scan_gen():
             if not Running:
                 break
             angle    = round(scan.angle) % 360
             distance = scan.distance / 10.0
 
-            if angle == 0:
+            if angle == 0 and current_scan:
                 with Lock:
-                    ScanData = {}  # Hreinsa gömul gögn við hverja heila hringrás
+                    ScanData = current_scan  # Skipta út með fullkláraðri hringrás
+                current_scan = {}            # Byrja nýja hringrás
 
             if 0 < distance <= MaxRange:
-                with Lock:
-                    ScanData[angle] = distance
+                current_scan[angle] = distance  # Byggja upp utan Lock
 
     except Exception as e:
         print(f"LiDAR error: {e}")
