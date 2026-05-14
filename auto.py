@@ -8,8 +8,9 @@ speed      = 200
 start_turn = 120
 sd         = 50
 
-STUCK_THRESHOLD = 3   # cm — hversu lítil hreyfing telst fastur
+STUCK_THRESHOLD = 5   # cm — hversu lítil hreyfing telst fastur
 STUCK_TIME      = 15  # fjöldi lestrar áður en við segjum að hann sé fastur
+front_history   = deque(maxlen=5)  # ← add this
 
 # ------ Svæði ------
 zone_a_wide   = set(range(315, 360)) | set(range(0, 46))  # Fram — vítt — snemma uppgötvun
@@ -105,7 +106,9 @@ def autopilot():
             left_clear  = min_distance(snapshot, zone_d)
             front_dist  = min_distance(snapshot, zone_a_wide)       # nálægasta hindrun framundan
 
-            recent_fronts.append(front_dist)  # fylgjast með hreyfingu
+            front_history.append(front_dist)
+            smoothed_front = sum(front_history) / len(front_history)
+            recent_fronts.append(smoothed_front)  # fylgjast með hreyfingu
 
             print(f"front: {front_dist:.0f}cm  FrontClose: {FrontClose}  FrontStop: {FrontStop}  L: {LeftClose}  R: {RightClose}")
 
