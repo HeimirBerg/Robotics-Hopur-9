@@ -5,9 +5,9 @@ import time
 
 
 # ------Fastar------
-speed      = 200
-start_turn = 120
-sd         = 40
+speed      = 100
+start_turn = 130
+sd         = 45
 
 STUCK_THRESHOLD = 5   # cm — hversu lítil hreyfing telst fastur
 STUCK_TIME      = 10  # fjöldi lestrar áður en við segjum að hann sé fastur
@@ -57,7 +57,7 @@ def escape_stuck(snapshot):
 
     # Keyra beint áfram þar til hindrun kemur í sjón
     print("Keyri beint til að losna...")
-    deadline = time.time() + 2.0
+    deadline = time.time() + 3.0
     while time.time() < deadline:
         fresh = get_snapshot()
         if min_distance(fresh, zone_a_narrow) <= start_turn:
@@ -140,7 +140,7 @@ def autopilot():
                     send_speeds(speed, speed)  # Keyra beint áfram
 
             elif FrontClose and not FrontStop:
-                # ------ Eitthvað framundan en enn pláss — rólegt beygja ------
+                # ------ Eitthvað framundan en enn pláss — róleg beygja ------
                 front_ref = min(
                     min_distance(snapshot, zone_a_wide),
                     min_distance(snapshot, zone_a_narrow)
