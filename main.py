@@ -38,8 +38,9 @@ def lalli() -> None:
         except KeyboardInterrupt:
             stop()
             print("\n=== Hætti í keyrslu ===\nSé þig seinna.")
+            myndavel.terminate()
             break
-    myndavel.terminate()
+    
             
 
 if __name__ == "__main__":
