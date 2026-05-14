@@ -51,13 +51,12 @@ def autopilot():
 
             FrontClose = under(snapshot, zone_a_wide, start_turn)   # Vítt — byrjar að beygja snemma
             FrontStop  = under(snapshot, zone_a_narrow, sd)         # Þröngt — stoppar bara ef beint framundan
-            front_dist = min_distance(snapshot, zone_a_wide)        # nálægasta hindrun framundan
             RightClose = under(snapshot, zone_b, sd)
             LeftClose  = under(snapshot, zone_d, sd)
 
             right_clear = min_distance(snapshot, zone_b)
             left_clear  = min_distance(snapshot, zone_d)
-            front_dist  = min_distance(snapshot, zone_a)
+            front_dist  = min_distance(snapshot, zone_a_wide)       # nálægasta hindrun framundan
 
             print(f"front: {front_dist:.0f}cm  FrontClose: {FrontClose}  FrontStop: {FrontStop}  L: {LeftClose}  R: {RightClose}")
 
