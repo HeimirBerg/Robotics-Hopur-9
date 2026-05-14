@@ -38,7 +38,7 @@ def lalli() -> None:
             stop()
             print("\n=== Hætti í keyrslu ===\nSé þig seinna.")
             break
-    myndavel.terminate()
+    #myndavel.terminate()
             
 
 if __name__ == "__main__":
