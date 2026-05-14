@@ -89,7 +89,7 @@ def turnToExit(heading, direction):
         dir_num = 3
     if angle < 2:
         return
-    duration = angle * degTime * 2
+    duration = angle * degTime * 4
     print(f"Spinning {direction} {angle}° → {duration:.3f}s")
     drive(255, dir_num, -1)
     time.sleep(duration)
