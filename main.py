@@ -11,7 +11,7 @@ def lalli() -> None:
     """Fallið hans Lalla"""
     
     print("\n=== Hæ, hæ, ég er Lalli Róbóti ===\n")
-    myndavel = subprocess.Popen("python3 myndavel.py", shell=True, 
+    myndavel = subprocess.Popen("python3 Desktop/Robotics-Hopur-9/myndavel.py", shell=True, 
                                 stdout=subprocess.DEVNULL,
                                 stderr=subprocess.DEVNULL, 
                                 stdin=subprocess.PIPE) # Keyrir myndavél í bakgrunni
