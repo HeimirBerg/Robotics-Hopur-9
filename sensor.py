@@ -2,78 +2,91 @@ from pyrplidar import PyRPlidar
 import threading
 import time
 
+
+# ------ Stillingar fyrir LiDAR ------
 LidarPort = "/dev/ttyUSB0"
 Baudrate  = 1000000
 MaxRange  = 300  # cm
 
 ScanData = {}
+# ------ Uppsetning á threading ------
 Lock     = threading.Lock()
 Running  = False
 _thread  = None
 
-def _scan_worker():
-    global Running, ScanData
-    lidar = PyRPlidar()
+def LiDAR(): # Keyrir LiDARinn í gang og lesur út úr mælingum
+    global Running, ScanData # Byrja thread
+    lidar = PyRPlidar() #Skilgreina LiDAR
     try:
+        # Stilla LiDAR 
         lidar.connect(port=LidarPort, baudrate=Baudrate, timeout=3)
         lidar.reset()
         time.sleep(5)
         lidar.lidar_serial._serial.reset_input_buffer()
+        StartScan = None
 
-        scan_gen = None
+        # Reyna að skanna 100x
         for attempt in range(100):
             try:
-                scan_gen = lidar.start_scan()
+                StartScan = lidar.start_scan()
                 print(f"Scan started on attempt {attempt + 1}")
                 break
             except Exception:
                 time.sleep(0.05)
 
-        if scan_gen is None:
+        # Ef ekki tekst að skanna 100x þá segja notenda það 
+        if StartScan is None:
             raise Exception("Could not start scan after 100 attempts")
 
-        current_scan = {}
+        CurrentScan = {}
 
-        for scan in scan_gen():
-            if not Running:
+        # Lesa út úr LiDAR gögnum
+        for scan in StartScan():
+            if not Running: # Athuga hvort að LiDAR sé ennþá í gangi
                 break
-            angle    = round(scan.angle) % 360
-            distance = scan.distance / 10.0
+            angle    = round(scan.angle) % 360 # Námundar gráðuna í næstu heiltölu
+            distance = scan.distance / 10.0 # Breytir fjarlægð úr mm í cm
 
-            if angle == 0 and current_scan:
+            # Uppfæra ScanData og endurstilla CurrentScan til að hefja nýjar mælingar 
+            if angle == 0 and CurrentScan:
                 with Lock:
-                    ScanData = current_scan  # Skipta út með fullkláraðri hringrás
-                current_scan = {}            # Byrja nýja hringrás
+                    ScanData = CurrentScan  
+                CurrentScan = {}            
 
             if 0 < distance <= MaxRange:
-                current_scan[angle] = distance  # Byggja upp utan Lock
+                CurrentScan[angle] = distance  
 
-    except Exception as e:
+    except Exception as e: #Tilkynna notanda um villu í LiDAR
         print(f"LiDAR error: {e}")
-    finally:
+    finally: # Slökkva á LiDAR
         Running = False
         lidar.stop()
         lidar.disconnect()
         print("LiDAR disconnected.")
 
-def start_lidar():
+# Keyra LiDAR í bakgrunni
+def StartLidar():
     global Running, _thread
     Running = True
-    _thread = threading.Thread(target=_scan_worker, daemon=True)
+    _thread = threading.Thread(target=LiDAR, daemon=True)
     _thread.start()
     time.sleep(8)  # Bíður eftir reset + fyrsta scan
     print("LiDAR ready.")
 
-def stop_lidar():
+# Stoppa LiDAR
+def StopLidar():
     global Running
     Running = False
     if _thread:
         _thread.join(timeout=3)
 
-def get_snapshot():
+# Læsa gögnunum sem að LiDAR mældi í síðustu umferð
+def GetSnapshot():
     with Lock:
         return dict(ScanData)
+    
 
+# Athuga hvort að hindrun sé undir lágmarki
 def under(snapshot, zone, threshold):
     for a, d in snapshot.items():
         if a in zone:
@@ -81,17 +94,8 @@ def under(snapshot, zone, threshold):
                 return True
     return False
 
-def zone_clearance(snapshot, zone):
-    distances = []
-    for angle, dist in snapshot.items():
-        if angle in zone:
-            distances.append(dist)
-    if distances:
-        return sum(distances) / len(distances)
-    else:
-        return MaxRange
-
-def min_distance(snapshot, zone):
+# Athuga hvar næsta hindrun er í ákveðnu svæði
+def MinDistance(snapshot, zone):
     distances = []
     for angle, dist in snapshot.items():
         if angle in zone:
