@@ -25,5 +25,5 @@ def stopdamusic():
     os.system("pkill -f mpg123")
 
 def rtonn(): # Spilum lag af handahófi
-    tonar = ["guiltynigga", "baciate", "barbie"]
+    tonar = ["baciate", "barbie"]
     spilatonlist(random.choice(tonar))
