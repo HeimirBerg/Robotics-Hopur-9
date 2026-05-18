@@ -6,15 +6,15 @@ import os
 
 spilari = None #Hátalarinn
 
-def term(skra): # Notum þetta fall til að skrifa
+def term(skra): # Notum þetta fall til að skrifa í terminal
     return f"mpg123 -a plughw:3,0 --mono \"Desktop/Robotics-Hopur-9/music/{skra}.mp3\""
 
 def spilatonlist(skra):
     global spilari
-    stopdamusic()
+    stopdamusic()  # Stoppar núverandi lag áður en nýtt er spilað
     try:
-        spilari = subprocess.Popen(
-            term(skra),shell=True,
+        spilari = subprocess.Popen(  # Ræsir nýtt lag í bakgrunni
+            term(skra), shell=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL, 
             stdin=subprocess.PIPE)
