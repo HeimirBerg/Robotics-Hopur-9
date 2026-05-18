@@ -160,7 +160,7 @@ def analog_control(device_path: str) -> None:
             m2 = -m2
 
         m.send_speeds(m1, m2)
-        time.sleep(0.001)  # Smá seinkun svo chrashi ekki
+        time.sleep(0.001)  # Smá seinkun svo crashi ekki
 
     print("\n=== Tilbúinn í keyrslu með farstýringu ===\n")
 
