@@ -7,7 +7,7 @@ import time
 # ------ Fastar ------
 speed      = 200 # Hraði sem mótorar keyra á 0-255
 start_turn = 130 # Byrja að beygja 130cm frá hindrun en samt bara rólega
-sd         = 30  # sd stendur fyrir "Stop Distance" og er til staðar sem neyðarstopp. 
+sd         = 40  # sd stendur fyrir "Stop Distance" og er til staðar sem neyðarstopp. 
 cornerSD     = 40 # Neyðarstopp fyrir hornin á róbotinum
 
 StuckRange    = 5  # Hvenær róbot telst fastur. Ef að hann fær tölur +-5cm þá veit hann að hann sé fastur
